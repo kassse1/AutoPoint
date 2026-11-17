@@ -30,7 +30,10 @@ class Timestamps:
 engine = create_engine(
     get_settings().database_url,
     pool_pre_ping=True,
-    connect_args={"connect_timeout": 3},
+    # Errors and logs never show query parameters (customer phones, names, tokens).
+    hide_parameters=True,
+    # A runaway query fails after 10 s instead of holding a connection and locks (DoS).
+    connect_args={"connect_timeout": 3, "options": "-c statement_timeout=10000"},
 )
 SessionLocal = sessionmaker(engine, expire_on_commit=False)
 

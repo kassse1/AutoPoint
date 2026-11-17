@@ -4,11 +4,13 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 6 — Integrations.** Public site (ru / kk / en) with contact form, live
+> **Status: Phase 7 — Quality.** Public site (ru / kk / en) with contact form, live
 > price calculator, 7-step online booking with database-level double-booking protection,
 > the staff admin at `/admin` (dashboard, bookings, customers, messages, services and price
 > matrix, discounts, gallery, reviews, staff and schedules, settings, notifications, users,
 > audit log), image uploads, and Telegram staff notifications through an outbox worker.
+> Covered by API tests, unit tests and Playwright end-to-end tests with accessibility
+> (axe) and performance budgets.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
@@ -84,6 +86,34 @@ Web (from `apps/web`; the build does **not** need a running API):
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build
+```
+
+End-to-end (from `apps/web`, against the running Docker stack on port 3000; the first run
+needs `npx playwright install chromium`):
+
+```bash
+npm run e2e
+```
+
+- **Booking flow:** a customer books through the wizard, staff confirm the booking in the
+  admin, and the customer sees the new status. Staff also change a master's schedule.
+- **Access control:** anonymous visitors and customer booking links get 401 from the admin
+  API, and an employee gets 403 on user management.
+- **Booking validation:** a double booking gets 409; a client-sent price, missing consent,
+  a bad phone or a past time get rejected.
+- **Security headers** on pages and API responses.
+- **Accessibility:** axe (WCAG 2.1 A/AA) on public pages in three languages and on admin
+  pages, failing on any console error, CSP violations included.
+- **Performance budgets:** JS ≤ 260 KB and page ≤ 500 KB compressed, LCP and CLS limits.
+
+The setup clears the rate-limit counters first: in the compose stack every request reaches
+the API from the web container's address, so all tests share one per-IP limit.
+
+Dependency audits (CI runs both):
+
+```bash
+cd apps/api && uv export --frozen --no-dev --no-emit-project -o req.txt && uvx pip-audit --disable-pip -r req.txt
+cd apps/web && npm audit --omit=dev
 ```
 
 After changing API schemas, regenerate the contract and the TS types (CI fails if they drift):
@@ -286,6 +316,24 @@ phone) live in `business_settings.data.booking` with defaults in `BookingPolicy`
 
 Every error is `application/problem+json`: `{type, title, status, code, detail, request_id, errors[]}`;
 every response carries `X-Request-ID`.
+
+## Security
+
+The threat model and how each threat is handled are in
+[docs/PHASE-0-architecture.md §8](docs/PHASE-0-architecture.md). In short:
+
+- **Headers on every response:**
+  - CSP with `frame-ancestors 'none'`, `object-src 'none'` and `connect-src 'self'`;
+  - `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`;
+  - HSTS in production builds.
+- **Request and query limits:**
+  - request bodies limited to 1 MB, or about 10 MB for image uploads;
+  - database queries time out after 10 s.
+- **Logs:** SQL errors and logs never contain query parameters.
+- **Booking integrity:** prices and availability are always recomputed on the server, and
+  a database constraint prevents double booking.
+- **Admin authentication:** Argon2id passwords, lockout, short-lived tokens, rotating
+  refresh cookies, and permissions checked on every admin route.
 
 ## Demo content — what is not real
 

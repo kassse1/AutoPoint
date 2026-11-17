@@ -37,6 +37,26 @@ from app.modules.staff import public as staff_public
 
 logger = logging.getLogger("app.access")
 _SAFE_REQUEST_ID = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
+# Request body limits: JSON bodies are small; uploads get the file limit plus multipart overhead.
+MAX_BODY = 1024 * 1024
+MAX_UPLOAD_BODY = media_upload.MAX_BYTES + 64 * 1024
+
+
+def body_too_large(request: Request):
+    """413/411 before the body is read. Chunked bodies have no length to check, so they are
+    refused; browsers and the web proxy always send Content-Length."""
+    if request.method not in ("POST", "PUT", "PATCH"):
+        return None
+    if "chunked" in request.headers.get("transfer-encoding", "").lower():
+        return problem(411, "LENGTH_REQUIRED")
+    limit = MAX_UPLOAD_BODY if request.url.path == "/api/v1/admin/media" else MAX_BODY
+    length = request.headers.get("content-length", "0")
+    if not length.isdigit():
+        return problem(400, "BAD_REQUEST")
+    if int(length) > limit:
+        return problem(413, "PAYLOAD_TOO_LARGE")
+    return None
+
 
 health = APIRouter(tags=["health"])
 
@@ -92,7 +112,7 @@ def create_app() -> FastAPI:
         started = time.perf_counter()
         try:
             try:
-                response = await call_next(request)
+                response = body_too_large(request) or await call_next(request)
             except Exception:
                 # Handled here (not in an exception handler) so the request id is still set.
                 logger.exception("Unhandled error")

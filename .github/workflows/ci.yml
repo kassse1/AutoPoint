@@ -35,6 +35,8 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      - name: Known vulnerabilities in dependencies
+        run: uv export --frozen --no-dev --no-emit-project -o /tmp/req.txt && uvx pip-audit==2.9.0 --disable-pip -r /tmp/req.txt
       - run: uv run alembic upgrade head
       - run: uv run pytest
       - name: OpenAPI schema is up to date
@@ -53,6 +55,9 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
+      # Critical only: a known high (picomatch via next-intl's dev-time watcher, no fix released)
+      # is not reachable with user input. See docs/PHASE-0-architecture.md, decisions log.
+      - run: npm audit --omit=dev --audit-level=critical
       - name: API types match the OpenAPI schema
         run: npm run api:types && git diff --exit-code src/lib/api/schema.d.ts
       - run: npm run lint
@@ -60,9 +65,28 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  docker:
+  e2e:
     runs-on: ubuntu-latest
     needs: [api, web]
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Start the stack (production web build, API, worker, PostgreSQL with demo seed)
+        run: docker compose up -d --build --wait
+      - run: npm ci
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npm run e2e
+        working-directory: apps/web
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+      - if: failure()
+        run: docker compose logs --no-color | tail -200

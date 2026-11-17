@@ -78,6 +78,7 @@ export function BarChart({
                   height={plotH}
                   fill="transparent"
                   tabIndex={0}
+                  role="img"
                   aria-label={`${d.label}: ${d.value}`}
                   onMouseEnter={() => setHover(i)}
                   onMouseLeave={() => setHover(null)}
