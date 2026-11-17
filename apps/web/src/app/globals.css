@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (docs/PHASE-0-architecture.md §4.2).
+ * Brand colours can be overridden at runtime by redefining these variables on :root
+ * from business settings, without a rebuild.
+ */
+@theme {
+  --color-bg: #0d0d0e;
+  --color-surface: #151517;
+  --color-surface-2: #1c1c1f;
+  --color-line: #2a2a2e;
+  --color-fg: #f3efe8;
+  --color-fg-muted: #a7a198;
+  --color-accent: #c3a46c;
+  --color-accent-fg: #0d0d0e;
+  --color-success: #7fa38a;
+  --color-warning: #d2a65a;
+  --color-danger: #c9665b;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
