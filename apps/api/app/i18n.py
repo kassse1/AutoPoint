@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any, Literal
 
-from pydantic import AfterValidator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from sqlalchemy import CheckConstraint
 
 Locale = Literal["ru", "kk", "en"]
@@ -29,3 +29,13 @@ I18nText = Annotated[dict[Locale, str], AfterValidator(_require_default)]
 def ru_required(column: str) -> CheckConstraint:
     """DB-level guarantee that the default-locale value exists."""
     return CheckConstraint(f"{column} ? 'ru'", name=f"{column}_has_ru")
+
+
+class Step(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str = Field(min_length=1, max_length=120)
+    text: str = Field(min_length=1, max_length=500)
+
+
+I18nList = Annotated[dict[Locale, list[str]], AfterValidator(_require_default)]
+I18nSteps = Annotated[dict[Locale, list[Step]], AfterValidator(_require_default)]

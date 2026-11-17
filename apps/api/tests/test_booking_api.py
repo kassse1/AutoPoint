@@ -29,13 +29,6 @@ def at(day: date, hh: int, mm: int = 0) -> datetime:
     return datetime.combine(day, time(hh, mm), TZ)
 
 
-@pytest.fixture
-def clock(monkeypatch):
-    state = {"now": at(MON, 9)}
-    monkeypatch.setattr("app.modules.bookings.public.utcnow", lambda: state["now"])
-    return state
-
-
 def body(starts_at: datetime, phone="+77001112233", service="ceramic-coating", **extra) -> dict:
     return {
         "selection": {"service": service, "vehicle": "sedan", "options": [], "addons": []},

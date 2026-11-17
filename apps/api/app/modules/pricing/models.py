@@ -45,4 +45,6 @@ class DiscountRule(Base):
     valid_to: Mapped[date | None] = mapped_column(Date)
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
 
-    services: Mapped[list[DiscountRuleService]] = relationship(lazy="selectin")
+    services: Mapped[list[DiscountRuleService]] = relationship(
+        lazy="selectin", cascade="all, delete-orphan"
+    )

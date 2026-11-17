@@ -1,4 +1,4 @@
-"""Booking creation, lookup and self-cancel.
+"""Booking creation, lookup, cancellation, status changes and rescheduling.
 
 Concurrency: availability is re-checked here, but the final word is the database's
 exclusion constraint `bookings_no_overlap`. Each candidate employee is tried inside a
@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.errors import AppError
 from app.modules.audit.models import record
+from app.modules.auth.permissions import CurrentUser
 from app.modules.bookings.models import ACTIVE_STATUSES, Booking, BookingItem
 from app.modules.customers.models import Customer
 from app.modules.pricing.engine import Quote
@@ -115,22 +116,36 @@ def create_booking(
     policy: BookingPolicy,
     tz: ZoneInfo,
     now: datetime,
+    staff: CurrentUser | None = None,  # set for bookings made by staff in the admin panel
+    employee_id: int | None = None,  # staff may pick the employee
+    status: str = "pending",
 ) -> tuple[Booking, bool]:
-    """Returns (booking, created). `created` is False for an idempotent replay."""
+    """Returns (booking, created). `created` is False for an idempotent replay.
+
+    Public bookings must respect lead time, horizon and the per-phone limit; staff bookings
+    (phone calls, walk-ins) skip those but still need a free employee and a future start.
+    """
     existing = session.scalar(select(Booking).where(Booking.idempotency_key == idempotency_key))
     if existing:
         return existing, False
 
-    _check_window(starts_at, now, tz, policy)
+    if staff is None:
+        _check_window(starts_at, now, tz, policy)
+    elif starts_at <= now:
+        raise AppError(409, "SLOT_UNAVAILABLE", "Start time is in the past")
     quote, vehicle_id = quote_selection(session, selection, now.astimezone(tz).date())
 
-    active = session.scalar(
-        select(func.count())
-        .select_from(Booking)
-        .where(
-            Booking.customer_phone == customer_phone,
-            Booking.status.in_(ACTIVE_STATUSES),
-            Booking.starts_at > now,
+    active = (
+        0
+        if staff
+        else session.scalar(
+            select(func.count())
+            .select_from(Booking)
+            .where(
+                Booking.customer_phone == customer_phone,
+                Booking.status.in_(ACTIVE_STATUSES),
+                Booking.starts_at > now,
+            )
         )
     )
     if active >= policy.max_active_per_phone:
@@ -138,6 +153,10 @@ def create_booking(
 
     service_ids = [line.service.id for line in quote.lines]
     employees = qualified_employees(session, service_ids)
+    if employee_id is not None:
+        if employee_id not in employees:
+            raise AppError(409, "EMPLOYEE_NOT_QUALIFIED", "This employee can't do these services")
+        employees = [employee_id]
     day = starts_at.astimezone(tz).date()
     data = load_schedule(session, tz, employees, day, day)
     candidates = []
@@ -160,8 +179,8 @@ def create_booking(
             starts_at=starts_at,
             ends_at=ends_at,
             blocked_until=blocked_until,
-            status="pending",
-            source="web",
+            status=status,
+            source="admin" if staff else "web",
             customer_name=customer_name,
             customer_phone=customer_phone,
             customer_email=customer_email,
@@ -197,6 +216,8 @@ def create_booking(
             action="booking.created",
             entity_type="booking",
             entity_id=booking.id,
+            actor_kind="user" if staff else "public",
+            actor_user_id=staff.id if staff else None,
             after={
                 "reference": booking.reference,
                 "status": booking.status,
@@ -248,3 +269,119 @@ def cancel_by_customer(
 def local_parts(moment: datetime, tz: ZoneInfo) -> tuple[date, str]:
     local = moment.astimezone(tz)
     return local.date(), local.strftime("%H:%M")
+
+
+# --- staff operations ---------------------------------------------------------------------
+
+TRANSITIONS: dict[str, set[str]] = {
+    "pending": {"confirmed", "cancelled"},
+    "confirmed": {"in_progress", "cancelled", "no_show"},
+    "in_progress": {"completed", "cancelled"},
+}
+WORK_STATUSES = {"in_progress", "completed"}  # what employees may set on their own jobs
+
+
+def change_status(
+    session: Session,
+    booking: Booking,
+    new_status: str,
+    *,
+    user: CurrentUser,
+    may_manage: bool,
+    final_amount_kzt: int | None,
+    reason: str | None,
+    now: datetime,
+) -> None:
+    """Applies one step of the booking state machine.
+
+    pending → confirmed | cancelled;  confirmed → in_progress | cancelled | no_show;
+    in_progress → completed (needs the amount actually charged) | cancelled (owner/admin).
+    """
+    if new_status not in TRANSITIONS.get(booking.status, set()):
+        raise AppError(409, "INVALID_TRANSITION", f"{booking.status} → {new_status} is not allowed")
+    if not may_manage and new_status not in WORK_STATUSES:
+        raise AppError(403, "FORBIDDEN", "Employees can only start and finish jobs")
+    if (
+        booking.status == "in_progress"
+        and new_status == "cancelled"
+        and user.role
+        not in (
+            "owner",
+            "admin",
+        )
+    ):
+        raise AppError(403, "FORBIDDEN", "Only an owner or admin can cancel a job in progress")
+    if new_status == "no_show" and now < booking.starts_at:
+        raise AppError(409, "INVALID_TRANSITION", "No-show can be set only after the start time")
+    if new_status == "completed" and final_amount_kzt is None:
+        raise AppError(422, "FINAL_AMOUNT_REQUIRED", "Enter the amount actually charged")
+
+    before = {"status": booking.status}
+    booking.status = new_status
+    after: dict = {"status": new_status}
+    if new_status == "completed":
+        booking.final_amount_kzt = after["final_amount_kzt"] = final_amount_kzt
+    if new_status == "cancelled":
+        booking.cancelled_at = now
+        booking.cancel_reason = after["reason"] = reason
+    record(
+        session,
+        action="booking.status_changed",
+        entity_type="booking",
+        entity_id=booking.id,
+        actor_kind="user",
+        actor_user_id=user.id,
+        before=before,
+        after=after,
+    )
+
+
+def reschedule(
+    session: Session,
+    booking: Booking,
+    *,
+    starts_at: datetime,
+    employee_id: int | None,
+    user: CurrentUser,
+    policy: BookingPolicy,
+    tz: ZoneInfo,
+    now: datetime,
+) -> None:
+    """Move a booking to another time and/or employee; the same overlap guard applies."""
+    if booking.status not in ("pending", "confirmed"):
+        raise AppError(409, "INVALID_TRANSITION", "Only pending or confirmed bookings can move")
+    if starts_at <= now:
+        raise AppError(409, "SLOT_UNAVAILABLE", "Start time is in the past")
+    target = employee_id if employee_id is not None else booking.employee_id
+    services = [item.service_id for item in booking.items]
+    if target not in qualified_employees(session, services):
+        raise AppError(409, "EMPLOYEE_NOT_QUALIFIED", "This employee can't do these services")
+    minutes = sum(item.duration_min for item in booking.items)
+    day = starts_at.astimezone(tz).date()
+    data = load_schedule(session, tz, [target], day, day, exclude_booking=booking.id)
+    times = employee_range(data, target, starts_at, minutes, policy.buffer_min)
+    if times is None:
+        raise AppError(409, "SLOT_UNAVAILABLE", "The employee isn't free at that time")
+
+    before = {"starts_at": booking.starts_at.isoformat(), "employee_id": booking.employee_id}
+    savepoint = session.begin_nested()
+    booking.starts_at, booking.employee_id = starts_at, target
+    booking.ends_at, booking.blocked_until = times
+    try:
+        session.flush()
+    except IntegrityError as error:
+        savepoint.rollback()
+        if _sqlstate(error) == _EXCLUSION_VIOLATION:
+            raise AppError(409, "SLOT_UNAVAILABLE", "Taken a moment ago") from error
+        raise
+    savepoint.commit()
+    record(
+        session,
+        action="booking.rescheduled",
+        entity_type="booking",
+        entity_id=booking.id,
+        actor_kind="user",
+        actor_user_id=user.id,
+        before=before,
+        after={"starts_at": starts_at.isoformat(), "employee_id": target},
+    )

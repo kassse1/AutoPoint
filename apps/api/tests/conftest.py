@@ -97,3 +97,61 @@ def api(seeded):
         lambda key, window: seeded.execute(HIT_SQL, {"k": key, "w": window}).scalar_one()
     )
     return TestClient(app)
+
+
+PASSWORD = "correct horse battery staple"
+STAFF = {
+    "owner": "owner@example.com",
+    "admin": "admin@example.com",
+    "manager": "manager@example.com",
+    "employee": "erlan@example.com",
+}
+
+
+@pytest.fixture
+def staff(seeded):
+    """One user per role; the employee account is linked to the seeded master «Ерлан С.»."""
+    from sqlalchemy import select
+
+    from app.modules.auth.models import User
+    from app.modules.auth.security import hash_password
+    from app.modules.staff.models import Employee
+
+    password_hash = hash_password(PASSWORD)  # hashed once: Argon2id is slow on purpose
+    users = {
+        role: User(email=email, full_name=role.title(), role=role, password_hash=password_hash)
+        for role, email in STAFF.items()
+    }
+    seeded.add_all(users.values())
+    seeded.flush()
+    erlan = seeded.scalar(select(Employee).where(Employee.display_name == "Ерлан С."))
+    erlan.user_id = users["employee"].id
+    seeded.flush()
+    return users
+
+
+def login(api, email: str, password: str = PASSWORD):
+    return api.post("/api/v1/auth/login", json={"email": email, "password": password})
+
+
+@pytest.fixture
+def auth(api, staff):
+    """role → Authorization headers."""
+    headers = {}
+    for role, email in STAFF.items():
+        res = login(api, email)
+        assert res.status_code == 200, res.text
+        headers[role] = {"Authorization": f"Bearer {res.json()['access_token']}"}
+    api.cookies.clear()  # each test starts without a refresh cookie
+    return headers
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    """Freeze booking time at Monday 2026-11-23 09:00 in Astana (`clock["now"] = …` to move it)."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    state = {"now": datetime(2026, 11, 23, 9, 0, tzinfo=ZoneInfo("Asia/Almaty"))}
+    monkeypatch.setattr("app.modules.bookings.public.utcnow", lambda: state["now"])
+    return state

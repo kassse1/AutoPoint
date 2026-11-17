@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, Index, String, func
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
@@ -20,8 +21,9 @@ class AuditLog(Base):
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    # The FK to users is added in Phase 4 together with the users table.
-    actor_user_id: Mapped[uuid.UUID | None] = mapped_column()
+    actor_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
     actor_kind: Mapped[str] = mapped_column(String(10))
     action: Mapped[str] = mapped_column(String(50))
     entity_type: Mapped[str] = mapped_column(String(50))
@@ -57,4 +59,39 @@ def record(
             after=after,
             request_id=request_id_var.get(),
         )
+    )
+
+
+def apply_changes(obj: Any, data: dict[str, Any]) -> tuple[dict, dict]:
+    """Set attributes from `data`; return (before, after) of the fields that really changed,
+    JSON-ready for the audit log."""
+    before, after = {}, {}
+    for key, value in data.items():
+        old = getattr(obj, key)
+        if old != value:
+            before[key], after[key] = old, value
+            setattr(obj, key, value)
+    return jsonable_encoder(before), jsonable_encoder(after)
+
+
+def record_user(
+    session: Session,
+    user: Any,
+    action: str,
+    entity_type: str,
+    entity_id: Any,
+    *,
+    before: dict | None = None,
+    after: dict | None = None,
+) -> None:
+    """Audit row for an action by a logged-in staff member."""
+    record(
+        session,
+        action=action,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        actor_kind="user",
+        actor_user_id=user.id,
+        before=before,
+        after=after,
     )

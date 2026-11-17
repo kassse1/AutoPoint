@@ -14,10 +14,18 @@ from app.config import get_settings
 from app.db import get_session
 from app.errors import AppError, problem, register_error_handlers
 from app.logs import request_id_var, setup_logging
+from app.modules.audit import admin as audit_admin
+from app.modules.auth import router as auth
+from app.modules.bookings import admin as bookings_admin
 from app.modules.bookings import public as bookings_public
+from app.modules.catalog import admin as catalog_admin
 from app.modules.catalog import public as catalog_public
+from app.modules.customers import admin as customers_admin
 from app.modules.media import public as media_public
+from app.modules.pricing import admin as pricing_admin
+from app.modules.site import admin as site_admin
 from app.modules.site import public as site_public
+from app.modules.staff import admin as staff_admin
 from app.modules.staff import public as staff_public
 
 logger = logging.getLogger("app.access")
@@ -60,7 +68,13 @@ def create_app() -> FastAPI:
             allow_origins=settings.cors_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-Request-ID"],
+            allow_headers=[
+                "Authorization",
+                "Content-Type",
+                "Idempotency-Key",
+                "X-Request-ID",
+                "X-Requested-With",
+            ],
         )
 
     @app.middleware("http")
@@ -91,8 +105,23 @@ def create_app() -> FastAPI:
             request_id_var.reset(token)
 
     app.include_router(health)
-    for module in (catalog_public, media_public, site_public, staff_public, bookings_public):
-        app.include_router(module.router, prefix="/api/v1")
+    for router in (
+        catalog_public.router,
+        media_public.router,
+        site_public.router,
+        staff_public.router,
+        bookings_public.router,
+        auth.router,
+        auth.users_router,
+        bookings_admin.router,
+        customers_admin.router,
+        catalog_admin.router,
+        pricing_admin.router,
+        staff_admin.router,
+        site_admin.router,
+        audit_admin.router,
+    ):
+        app.include_router(router, prefix="/api/v1")
     return app
 
 

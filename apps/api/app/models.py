@@ -1,6 +1,7 @@
 """Import every model so Base.metadata is complete (used by Alembic)."""
 
 from app.modules.audit.models import AuditLog  # noqa: F401
+from app.modules.auth.models import RefreshSession, User  # noqa: F401
 from app.modules.bookings.models import Booking, BookingItem  # noqa: F401
 from app.modules.catalog.models import (  # noqa: F401
     PriceEntry,

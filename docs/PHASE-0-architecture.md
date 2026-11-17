@@ -621,3 +621,8 @@ Not pushed to GitHub; no `git add .`/`-A`; explicit file lists per commit, each 
 | 3 | Frontend calls the API via CORS | Next.js route `/api/v1/*` forwards to FastAPI (same origin, no build-time URL); in production Caddy routes `/api` directly | No CORS, no API URL baked into images |
 | 3 | All translations sent to the browser (next-intl default) | Layout sends only `Error`; booking pages add `Booking`/`Common`/`Manage` | Home page HTML 207 KB → 185 KB |
 | 3 | Telegram notification on new booking | Phase 6 (outbox + worker) | Not faking an integration before it exists; the audit log already records every booking |
+| 4 | Gallery and reviews admin in Phase 4 | Phase 6, together with image uploads | Managing a gallery without uploads would be half a feature |
+| 4 | Analytics endpoints with the admin API | Phase 5, built with the dashboard that uses them | Designed against real UI needs, not guessed now |
+| 4 | Audit log append-only via DB grants | Phase 8 (needs a separate DB role in the production setup) | The app writes audit rows in the same transaction as each change; no endpoint edits or deletes them |
+| 4 | Admin API on the same Next.js `/api` proxy | Proxy now forwards `Authorization`, `X-Requested-With`, cookies and `Set-Cookie` | The admin app can log in through the website origin; verified end-to-end on Docker |
+| 4 | Refresh in two tabs at once | Treated as token reuse: that login ends and the user logs in again | Simplest correct rotation; the Phase 5 admin app will refresh from one place only |

@@ -32,7 +32,12 @@ def qualified_employees(session: Session, service_ids: list[int]) -> list[int]:
 
 
 def load_schedule(
-    session: Session, tz: ZoneInfo, employees: list[int], date_from: date, date_to: date
+    session: Session,
+    tz: ZoneInfo,
+    employees: list[int],
+    date_from: date,
+    date_to: date,
+    exclude_booking=None,  # a booking being moved doesn't block its own new time
 ) -> ScheduleData:
     # Jobs can spill over into following days, so look a bit past the requested range.
     last = date_to + timedelta(days=MAX_JOB_DAYS)
@@ -66,6 +71,7 @@ def load_schedule(
             Booking.status.in_(ACTIVE_STATUSES),
             Booking.blocked_until > range_start,
             Booking.starts_at < range_end,
+            Booking.id != exclude_booking if exclude_booking else True,
         )
     ):
         data.busy.setdefault(b.employee_id, []).append((b.starts_at, b.blocked_until))

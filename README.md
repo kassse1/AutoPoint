@@ -4,10 +4,11 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 3 — Pricing and booking.** Public site (ru / kk / en), live price
-> calculator and a 7-step online booking with server-side availability and database-level
-> double-booking protection. The admin panel (Phases 4–5) and Telegram notifications
-> (Phase 6) are not built yet: new bookings stay `pending` and are visible only in the database.
+> **Status: Phase 4 — Admin backend.** Public site (ru / kk / en), live price calculator,
+> 7-step online booking with database-level double-booking protection, and the complete
+> admin **API** (login, roles, bookings, customers, catalog, prices, staff, schedules,
+> settings, users, audit log). The admin **interface** is Phase 5; Telegram notifications and
+> image uploads are Phase 6.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
@@ -103,6 +104,37 @@ cd apps/api && uv run python -m app.openapi && cd ../web && npm run api:types
 - Interface and marketing copy lives in `apps/web/messages/{ru,kk,en}.json`. Keys are
   type-checked: a missing or misspelled key fails `npm run typecheck`.
 
+## Admin access
+
+There are no default accounts. Create the first owner on a fresh install (the password is
+asked interactively, or read from `AUTOPOINT_PASSWORD`):
+
+```bash
+docker compose exec api python -m app.manage create-user --email you@example.com --name "Your Name" --role owner
+```
+
+How login works:
+
+- **Passwords:** hashed with Argon2id; 5 wrong attempts lock the account for 15 minutes,
+  doubling up to 24 h (an admin can unlock it). Login is rate-limited per IP.
+- **Tokens:** a 15-minute access JWT, sent as `Authorization: Bearer`, plus a refresh token
+  in an `HttpOnly`, `SameSite=Strict` cookie that is only sent to `/api/v1/auth`.
+- **Refresh:** each refresh replaces the refresh token. If an old token is used again,
+  every session of that login is revoked. Refresh and logout also require the header
+  `X-Requested-With: autopoint`.
+- **Immediate effect:** logout, password change, deactivation and role changes apply at
+  once. Every request checks the user and the login session in the database.
+
+| Role | Can |
+|---|---|
+| owner | everything, including managing owners |
+| admin | everything except creating, changing or demoting owners |
+| manager | bookings, customers, schedules and holidays; read catalog, staff and settings |
+| employee | only their own bookings: view, start (in progress) and finish (completed) |
+
+Permissions are enforced in the API (`app/modules/auth/permissions.py`). A test walks every
+admin route and checks it against every role.
+
 ## Configuration
 
 API (`apps/api/app/config.py`, environment variables only):
@@ -136,6 +168,19 @@ Booking (rate-limited per client IP):
 | `GET /availability?service=&vehicle=&options=&addons=&date_from=&date_to=` | Free start times per day (≤ 31 days), as `2026-11-24T10:00:00+05:00` plus a `10:00` label |
 | `POST /bookings` | Header `Idempotency-Key` (UUID). Re-checks price and availability, assigns an employee, returns the booking and a private manage token. 409 `SLOT_UNAVAILABLE` if taken. |
 | `POST /bookings/lookup` · `POST /bookings/cancel` | With the manage token in the body (never in a URL). Customers can cancel until `cancel_cutoff_hours` before the start. |
+
+### Admin API (Bearer token)
+
+`/api/v1/auth/…` login, refresh, logout, logout-all, me, password, sessions ·
+`/api/v1/admin/…` bookings (list with filters / detail with history / create / notes /
+status / reschedule / assign), customers, service-categories, services, options, prices
+(whole matrix per service), vehicle-categories, discount-rules, employees (+ skills,
+weekly schedule), business-hours, schedule-exceptions, settings, users, audit-logs.
+Full contract: `apps/api/openapi.json` or `/api/docs` in development.
+
+Booking statuses: `pending → confirmed → in_progress → completed` (completion records the
+amount actually charged), plus `cancelled` and `no_show` (only after the start time).
+Every change is written to the audit log with the staff member who made it.
 
 ### How double booking is prevented
 
