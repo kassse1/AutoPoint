@@ -1,0 +1,36 @@
+# Caddy for compose.prod.yml: automatic HTTPS (Let's Encrypt) for $DOMAIN, HTTP → HTTPS.
+# DOMAIN=localhost uses Caddy's local CA, for trying the stack on your own machine.
+{$DOMAIN} {
+	encode zstd gzip
+
+	# The API refuses bigger bodies too; this stops them before they reach it.
+	request_body {
+		max_size 11MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		-Server
+	}
+
+	# The API directly (Caddy sets X-Forwarded-For to the real client address, which the
+	# per-IP rate limits use). Pages set their own CSP in Next.js; API responses get a strict one.
+	@api path /api/v1/* /health /health/ready
+	handle @api {
+		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

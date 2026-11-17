@@ -1,0 +1,117 @@
+# Production stack for one server: Caddy (HTTPS) → web (Next.js) and api (FastAPI) → PostgreSQL.
+#   cp .env.prod.example .env.prod   # fill in the values
+#   docker compose -f compose.prod.yml --env-file .env.prod up -d --build --wait
+# Only Caddy publishes ports. See docs/deploy.md.
+name: autopoint-prod
+
+x-api-env: &api-env
+  ENVIRONMENT: production
+  # The app connects as a restricted role (no UPDATE/DELETE on the audit log).
+  DATABASE_URL: postgresql+psycopg://autopoint_app:${APP_DB_PASSWORD:?set APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-autopoint}
+  SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY (32+ random characters)}
+  PUBLIC_URL: https://${DOMAIN:?set DOMAIN}
+  MEDIA_ROOT: /data/media
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-autopoint}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-autopoint}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      # Runs once, on an empty data volume: creates the restricted app role.
+      - ./deploy/postgres/create-app-role.sh:/docker-entrypoint-initdb.d/create-app-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: apps/api
+    restart: unless-stopped
+    environment:
+      <<: *api-env
+      # Migrations and grants run as the owner role, the server as the app role.
+      MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-autopoint}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-autopoint}
+      SEED_DEMO: ${SEED_DEMO:-false}
+    command:
+      - sh
+      - -c
+      - >-
+        DATABASE_URL="$$MIGRATION_DATABASE_URL" alembic upgrade head &&
+        DATABASE_URL="$$MIGRATION_DATABASE_URL" python -m app.manage grant-app-role &&
+        if [ "$$SEED_DEMO" = true ]; then python -m app.seed; fi &&
+        exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'
+    # --forwarded-allow-ips='*' is safe only because the api port is not published:
+    # requests come from Caddy (which sets X-Forwarded-For) or the web container.
+    volumes:
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+
+  worker:
+    build: apps/api
+    restart: unless-stopped
+    command: ["python", "-m", "app.worker"]
+    environment:
+      <<: *api-env
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    depends_on:
+      api:
+        condition: service_healthy
+
+  web:
+    build: apps/web
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      SITE_URL: https://${DOMAIN}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/robots.txt').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:

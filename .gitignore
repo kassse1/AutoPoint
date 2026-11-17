@@ -2,6 +2,10 @@
 .env
 .env.*
 !.env.example
+!.env.prod.example
+
+# database and media backups (scripts/backup.sh)
+backups/
 
 # OS / editors
 .DS_Store

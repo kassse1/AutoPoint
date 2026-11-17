@@ -4,14 +4,33 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 7 — Quality.** Public site (ru / kk / en) with contact form, live
+> **Status: Phase 8 — Production.** Public site (ru / kk / en) with contact form, live
 > price calculator, 7-step online booking with database-level double-booking protection,
 > the staff admin at `/admin` (dashboard, bookings, customers, messages, services and price
 > matrix, discounts, gallery, reviews, staff and schedules, settings, notifications, users,
 > audit log), image uploads, and Telegram staff notifications through an outbox worker.
 > Covered by API tests, unit tests and Playwright end-to-end tests with accessibility
-> (axe) and performance budgets.
+> (axe) and performance budgets. Production stack with Caddy (HTTPS), backups and guides:
+> [docs/deploy.md](docs/deploy.md).
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
+
+| | |
+|---|---|
+| ![Home](docs/screenshots/home.jpg) | ![Price calculator](docs/screenshots/booking-calculator.jpg) |
+| ![Admin: bookings](docs/screenshots/admin-bookings.jpg) | ![Admin: dashboard](docs/screenshots/admin-dashboard.jpg) |
+
+More in [docs/screenshots](docs/screenshots) (mobile too). They were taken by
+`npm run screenshots` on a fresh production stack with the demo catalogue. The bookings
+in them are visibly labelled demo customers.
+
+## Documentation
+
+| Guide | For |
+|---|---|
+| [docs/deploy.md](docs/deploy.md) | installing on a server: HTTPS, updates, backups, restore, monitoring |
+| [docs/admin-guide.md](docs/admin-guide.md) | studio staff (in Russian): bookings, prices, schedules, gallery, settings |
+| [docs/customization.md](docs/customization.md) | re-branding for another business |
+| [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md) | architecture, threat model, decisions log |
 
 ## Stack
 
@@ -28,8 +47,11 @@ configuration.
 apps/api      FastAPI app (app/), migrations (migrations/), tests (tests/), openapi.json
 apps/web      Next.js: public site (src/app/[locale]/…), admin (src/app/admin/…), translations (messages/)
 docs/         architecture and decisions
-compose.yml   local stack: db, api, worker, web
-render.yaml   Render Blueprint (deploy/: its single-container image)
+compose.yml        local stack: db, api, worker, web
+compose.prod.yml   production: Caddy (HTTPS) + the same services, restricted DB role
+deploy/            Caddyfile, Postgres init script, Render image and start script
+scripts/           backup.sh, restore.sh, smoke.sh
+render.yaml        Render Blueprint (free preview)
 .github/      CI workflow
 ```
 
