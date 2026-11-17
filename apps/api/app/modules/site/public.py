@@ -3,9 +3,8 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.deps import LocaleQuery, SessionDep
-from app.errors import AppError
 from app.i18n import DEFAULT_LOCALE, Locale, pick
-from app.modules.site.models import BusinessHours, BusinessSettings, MapLink, SiteSettings
+from app.modules.site.models import BusinessHours, MapLink, get_site_settings
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -41,10 +40,7 @@ class SiteOut(BaseModel):
 
 @router.get("/site")
 def get_site(session: SessionDep, locale: LocaleQuery = DEFAULT_LOCALE) -> SiteOut:
-    row = session.get(BusinessSettings, 1)
-    if row is None:
-        raise AppError(503, "SITE_NOT_CONFIGURED", "Run the seed or configure settings")
-    s = SiteSettings.model_validate(row.data)
+    s = get_site_settings(session)
     hours = session.scalars(select(BusinessHours).order_by(BusinessHours.weekday))
     return SiteOut(
         business_name=s.business_name,

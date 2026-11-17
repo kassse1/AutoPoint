@@ -7,6 +7,7 @@ Everything here is DEMO data: prices, contacts, team and reviews are examples, f
 import logging
 from datetime import date, time
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
@@ -18,6 +19,8 @@ from app.modules.catalog.models import (
     VehicleCategory,
 )
 from app.modules.media.models import GalleryImage, Review
+from app.modules.pricing.models import DiscountRule, DiscountRuleService
+from app.modules.scheduling.models import EmployeeSchedule, EmployeeService
 from app.modules.site.models import BusinessHours, BusinessSettings, SiteSettings
 from app.modules.staff.models import Employee
 
@@ -390,7 +393,13 @@ def _round(value: float, step: int) -> int:
 
 
 def seed(session: Session) -> bool:
-    """Insert demo data. Returns False (and does nothing) if the site is already configured."""
+    """Insert whatever demo data is missing. Each part checks for itself, so a database
+    seeded by an earlier version only gets the new parts. Returns True if anything was added."""
+    added = [seed_site_and_catalog(session), seed_scheduling(session), seed_discounts(session)]
+    return any(added)
+
+
+def seed_site_and_catalog(session: Session) -> bool:
     if session.get(BusinessSettings, 1) is not None:
         return False
 
@@ -493,6 +502,80 @@ def seed(session: Session) -> bool:
                 is_demo=True,
             )
         )
+    session.flush()
+    return True
+
+
+# Who can do what, and when (business-local time). Asel is the studio manager: not bookable.
+SKILLS = {
+    "Ерлан С.": [
+        "exterior-detailing",
+        "paint-correction",
+        "ceramic-coating",
+        "interior-detailing",
+        "deep-interior-cleaning",
+        "headlight-restoration",
+    ],
+    "Дмитрий К.": [
+        "ppf",
+        "window-tinting",
+        "headlight-restoration",
+        "exterior-detailing",
+        "ceramic-coating",
+    ],
+}
+WEEKLY = {
+    "Ерлан С.": [(d, time(9), time(18)) for d in range(1, 6)],  # Mon–Fri
+    "Дмитрий К.": [(d, time(10), time(19)) for d in range(2, 7)],  # Tue–Sat
+}
+
+
+def seed_scheduling(session: Session) -> bool:
+    if session.scalar(select(EmployeeService.employee_id).limit(1)) is not None:
+        return False
+    employees = {e.display_name: e for e in session.scalars(select(Employee))}
+    services = {s.slug: s.id for s in session.scalars(select(Service))}
+    for name, employee in employees.items():
+        employee.is_bookable = name in SKILLS
+    for name, slugs in SKILLS.items():
+        session.add_all(
+            EmployeeService(employee_id=employees[name].id, service_id=services[slug])
+            for slug in slugs
+        )
+        session.add_all(
+            EmployeeSchedule(
+                employee_id=employees[name].id, weekday=d, starts_local=a, ends_local=b
+            )
+            for d, a, b in WEEKLY[name]
+        )
+    session.flush()
+    return True
+
+
+def seed_discounts(session: Session) -> bool:
+    if session.scalar(select(DiscountRule.id).limit(1)) is not None:
+        return False
+    services = {s.slug: s.id for s in session.scalars(select(Service))}
+    bundle = DiscountRule(
+        kind="bundle",
+        name_i18n=t("Кузов + салон", "Шанақ + салон", "Exterior + interior"),
+        percent=10,
+    )
+    session.add(bundle)
+    session.flush()
+    session.add_all(
+        DiscountRuleService(rule_id=bundle.id, service_id=services[slug])
+        for slug in ("exterior-detailing", "interior-detailing")
+    )
+    session.add(
+        DiscountRule(
+            kind="min_services",
+            name_i18n=t("Комплекс из 3 услуг", "3 қызмет кешені", "Package of 3 services"),
+            percent=5,
+            min_services=3,
+        )
+    )
+    session.flush()
     return True
 
 
@@ -500,7 +583,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
     with SessionLocal.begin() as session:
         created = seed(session)
-    logger.info("Demo data %s", "created" if created else "skipped: site already configured")
+    logger.info("Demo data %s", "added" if created else "skipped: already present")
 
 
 if __name__ == "__main__":

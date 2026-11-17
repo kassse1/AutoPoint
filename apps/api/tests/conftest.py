@@ -33,6 +33,13 @@ def _ensure_test_database() -> None:
     admin.dispose()
 
 
+def assert_test_database(engine) -> None:
+    """Destructive fixtures must never touch a non-test database (e.g. if the app was
+    imported before this conftest redirected DATABASE_URL)."""
+    if not (engine.url.database or "").endswith("_test"):
+        raise RuntimeError(f"Refusing to modify non-test database {engine.url.database!r}")
+
+
 def run_alembic(*args: str) -> None:
     subprocess.run(  # noqa: S603 - fixed argv, no shell
         [sys.executable, "-m", "alembic", *args], cwd=API_DIR, check=True
@@ -53,6 +60,7 @@ def db_session() -> Iterator:
     from app import models  # noqa: F401
     from app.db import Base, engine
 
+    assert_test_database(engine)
     with engine.connect() as conn:
         trans = conn.begin()
         session = Session(bind=conn, join_transaction_mode="create_savepoint")
@@ -80,7 +88,12 @@ def api(seeded):
 
     from app.db import get_session
     from app.main import create_app
+    from app.ratelimit import HIT_SQL, get_hit_counter
 
     app = create_app()
     app.dependency_overrides[get_session] = lambda: seeded
+    # Count hits inside the test transaction (a separate connection would block on its locks).
+    app.dependency_overrides[get_hit_counter] = lambda: (
+        lambda key, window: seeded.execute(HIT_SQL, {"k": key, "w": window}).scalar_one()
+    )
     return TestClient(app)

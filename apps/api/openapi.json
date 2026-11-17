@@ -543,10 +543,590 @@
           }
         }
       }
+    },
+    "/api/v1/public/quotes": {
+      "post": {
+        "tags": [
+          "booking"
+        ],
+        "summary": "Create Quote",
+        "operationId": "create_quote_api_v1_public_quotes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Selection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/availability": {
+      "get": {
+        "tags": [
+          "booking"
+        ],
+        "summary": "Get Availability",
+        "operationId": "get_availability_api_v1_public_availability_get",
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9_-]+$",
+              "title": "Service"
+            }
+          },
+          {
+            "name": "vehicle",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9_-]+$",
+              "title": "Vehicle"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "options",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9_-]+$"
+              },
+              "maxItems": 10,
+              "default": [],
+              "title": "Options"
+            }
+          },
+          {
+            "name": "addons",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9_-]+$"
+              },
+              "maxItems": 5,
+              "default": [],
+              "title": "Addons"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/bookings": {
+      "post": {
+        "tags": [
+          "booking"
+        ],
+        "summary": "Create Booking",
+        "operationId": "create_booking_api_v1_public_bookings_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingCreated"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Idempotent replay of an earlier identical request"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/bookings/lookup": {
+      "post": {
+        "tags": [
+          "booking"
+        ],
+        "summary": "Lookup Booking",
+        "operationId": "lookup_booking_api_v1_public_bookings_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/bookings/cancel": {
+      "post": {
+        "tags": [
+          "booking"
+        ],
+        "summary": "Cancel Booking",
+        "operationId": "cancel_booking_api_v1_public_bookings_cancel_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AvailabilityDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/Slot"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "slots"
+        ],
+        "title": "AvailabilityDay"
+      },
+      "AvailabilityOut": {
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "duration_min": {
+            "type": "integer",
+            "title": "Duration Min"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityDay"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timezone",
+          "duration_min",
+          "days"
+        ],
+        "title": "AvailabilityOut"
+      },
+      "BookingCreated": {
+        "properties": {
+          "manage_token": {
+            "type": "string",
+            "title": "Manage Token"
+          },
+          "booking": {
+            "$ref": "#/components/schemas/BookingOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "manage_token",
+          "booking"
+        ],
+        "title": "BookingCreated"
+      },
+      "BookingIn": {
+        "properties": {
+          "selection": {
+            "$ref": "#/components/schemas/Selection"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerIn"
+          },
+          "vehicle_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Note"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "consent": {
+            "type": "boolean",
+            "const": true,
+            "title": "Consent"
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Website",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "selection",
+          "starts_at",
+          "customer",
+          "consent"
+        ],
+        "title": "BookingIn",
+        "description": "No price, employee or status fields: the server decides all of them."
+      },
+      "BookingLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "price_kzt": {
+            "type": "integer",
+            "title": "Price Kzt"
+          },
+          "duration_min": {
+            "type": "integer",
+            "title": "Duration Min"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "role",
+          "options",
+          "price_kzt",
+          "duration_min"
+        ],
+        "title": "BookingLineOut"
+      },
+      "BookingOut": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "vehicle": {
+            "type": "string",
+            "title": "Vehicle"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/BookingLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "starts": {
+            "$ref": "#/components/schemas/TimePoint"
+          },
+          "ends": {
+            "$ref": "#/components/schemas/TimePoint"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At"
+          },
+          "subtotal_kzt": {
+            "type": "integer",
+            "title": "Subtotal Kzt"
+          },
+          "discount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiscountOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_kzt": {
+            "type": "integer",
+            "title": "Total Kzt"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "phone_masked": {
+            "type": "string",
+            "title": "Phone Masked"
+          },
+          "can_cancel": {
+            "type": "boolean",
+            "title": "Can Cancel"
+          },
+          "cancel_until": {
+            "$ref": "#/components/schemas/TimePoint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference",
+          "status",
+          "vehicle",
+          "lines",
+          "starts",
+          "ends",
+          "starts_at",
+          "ends_at",
+          "subtotal_kzt",
+          "discount",
+          "total_kzt",
+          "customer_name",
+          "phone_masked",
+          "can_cancel",
+          "cancel_until"
+        ],
+        "title": "BookingOut"
+      },
+      "CancelIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 20,
+            "title": "Token"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "kk",
+              "en"
+            ],
+            "title": "Locale",
+            "default": "ru"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "CancelIn"
+      },
       "CategoryOut": {
         "properties": {
           "slug": {
@@ -564,6 +1144,58 @@
           "name"
         ],
         "title": "CategoryOut"
+      },
+      "CustomerIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "phone"
+        ],
+        "title": "CustomerIn"
+      },
+      "DiscountOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "amount_kzt": {
+            "type": "integer",
+            "title": "Amount Kzt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "amount_kzt"
+        ],
+        "title": "DiscountOut"
       },
       "GalleryItem": {
         "properties": {
@@ -813,6 +1445,127 @@
         ],
         "title": "ProcessStep"
       },
+      "QuoteLineOut": {
+        "properties": {
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "addon"
+            ],
+            "title": "Role"
+          },
+          "base_price_kzt": {
+            "type": "integer",
+            "title": "Base Price Kzt"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteOption"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "price_kzt": {
+            "type": "integer",
+            "title": "Price Kzt"
+          },
+          "duration_min": {
+            "type": "integer",
+            "title": "Duration Min"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service",
+          "name",
+          "role",
+          "base_price_kzt",
+          "options",
+          "price_kzt",
+          "duration_min"
+        ],
+        "title": "QuoteLineOut"
+      },
+      "QuoteOption": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "price_kzt": {
+            "type": "integer",
+            "title": "Price Kzt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "price_kzt"
+        ],
+        "title": "QuoteOption"
+      },
+      "QuoteOut": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "subtotal_kzt": {
+            "type": "integer",
+            "title": "Subtotal Kzt"
+          },
+          "discount": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiscountOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_kzt": {
+            "type": "integer",
+            "title": "Total Kzt"
+          },
+          "duration_min": {
+            "type": "integer",
+            "title": "Duration Min"
+          },
+          "currency": {
+            "type": "string",
+            "const": "KZT",
+            "title": "Currency",
+            "default": "KZT"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lines",
+          "subtotal_kzt",
+          "discount",
+          "total_kzt",
+          "duration_min"
+        ],
+        "title": "QuoteOut"
+      },
       "ReviewOut": {
         "properties": {
           "id": {
@@ -892,6 +1645,66 @@
           "is_demo"
         ],
         "title": "ReviewOut"
+      },
+      "Selection": {
+        "properties": {
+          "service": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z0-9_-]+$",
+            "title": "Service"
+          },
+          "vehicle": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z0-9_-]+$",
+            "title": "Vehicle"
+          },
+          "options": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1,
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Options",
+            "default": []
+          },
+          "addons": {
+            "items": {
+              "type": "string",
+              "maxLength": 80,
+              "minLength": 1,
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Addons",
+            "default": []
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "kk",
+              "en"
+            ],
+            "title": "Locale",
+            "default": "ru"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "service",
+          "vehicle"
+        ],
+        "title": "Selection",
+        "description": "What the customer picked. Shared by quotes, availability and booking."
       },
       "ServiceCard": {
         "properties": {
@@ -1290,6 +2103,25 @@
         ],
         "title": "SiteOut"
       },
+      "Slot": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "time"
+        ],
+        "title": "Slot"
+      },
       "TeamMember": {
         "properties": {
           "id": {
@@ -1341,6 +2173,51 @@
           "is_demo"
         ],
         "title": "TeamMember"
+      },
+      "TimePoint": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "time"
+        ],
+        "title": "TimePoint"
+      },
+      "TokenIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 20,
+            "title": "Token"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "kk",
+              "en"
+            ],
+            "title": "Locale",
+            "default": "ru"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "TokenIn"
       },
       "ValidationError": {
         "properties": {

@@ -35,6 +35,8 @@ describe("ICU messages", () => {
   const sample = {
     business: "AutoPoint", year: 2026, city: "Астана", service: "PPF", price: "1 ₸",
     from: 2, to: 3, value: 1.5, title: "x", rating: 5, address: "a", email: "e",
+    current: 1, total: 7, name: "n", when: "w", reference: "AP-123456",
+    link: (chunks: unknown) => chunks,
   };
 
   it.each(Object.keys(catalogs))("every %s message compiles and formats", (locale) => {
@@ -43,8 +45,9 @@ describe("ICU messages", () => {
       locale: locale as Locale,
       messages: catalogs[locale] as never,
       onError: (e) => errors.push(e.message),
-    }) as unknown as (key: string, values: object) => string;
-    for (const key of Object.keys(flatten(catalogs[locale]))) t(key, sample);
+    }) as unknown as { rich: (key: string, values: object) => unknown };
+    // t.rich formats plain and rich (<link>…</link>) messages alike.
+    for (const key of Object.keys(flatten(catalogs[locale]))) t.rich(key, sample);
     expect(errors).toEqual([]);
   });
 

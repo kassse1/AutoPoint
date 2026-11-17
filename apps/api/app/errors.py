@@ -14,10 +14,17 @@ from app.logs import request_id_var
 class AppError(Exception):
     """Raise from business code; rendered as a problem response."""
 
-    def __init__(self, status: int, code: str, detail: str | None = None) -> None:
+    def __init__(
+        self,
+        status: int,
+        code: str,
+        detail: str | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
         self.status = status
         self.code = code
         self.detail = detail
+        self.headers = headers
 
 
 def problem(
@@ -48,7 +55,7 @@ def _code_for(status: int) -> str:
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def app_error(_: Request, exc: AppError) -> JSONResponse:
-        return problem(exc.status, exc.code, exc.detail)
+        return problem(exc.status, exc.code, exc.detail, headers=exc.headers)
 
     @app.exception_handler(HTTPException)
     async def http_error(_: Request, exc: HTTPException) -> JSONResponse:

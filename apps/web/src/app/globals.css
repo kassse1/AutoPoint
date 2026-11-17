@@ -80,6 +80,18 @@ body {
   }
 }
 
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .step-enter {
+    animation: step-enter 0.2s ease-out;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

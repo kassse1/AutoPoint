@@ -610,8 +610,14 @@ Not pushed to GitHub; no `git add .`/`-A`; explicit file lists per commit, each 
 | 1 | Worker stub in compose | Worker added in Phase 6 | No work for it until notifications exist |
 | 2 | Next.js Cache Components + Partial Prefetching (scaffold defaults) | Disabled; classic on-demand ISR (`generateStaticParams` → `[]`, API fetch revalidated every 60 s) | Cache Components prerenders API data at build time, so images and CI builds would need a running API |
 | 2 | Inter Tight (display) + Inter (text) | Inter only | Lighthouse mobile: 7 font files delayed the text LCP; one variable family (3 files) raised performance from 82–92 to 92–96 |
-| 2 | Framer Motion section reveals | CSS scroll-driven animation (`.reveal`); Framer Motion deferred to the Phase 3 wizard | Zero JS, no `opacity: 0` in server HTML, degrades to static content |
+| 2–3 | Framer Motion (section reveals, wizard steps) | CSS animations (`.reveal`, `.step-enter`); Framer Motion not used | Zero JS. In Phase 3 the Framer `AnimatePresence` step transition kept the old step mounted until its exit animation finished — page content must never depend on an animation completing |
 | 2 | `image_key` columns | `image_url` (site-relative path or URL) | No storage abstraction needed yet; uploads in Phase 6 produce `/media/…` URLs |
 | 2 | Gallery categories table | Gallery items reference `service_categories` | Same categories as services; one table less |
 | 2 | Lightbox | Not built | No real photos yet; revisit when photos exist |
 | 2 | Contact form on Contacts page | Phase 6 (with its backend, spam protection and notifications) | Not shipping a form that doesn't send anything |
+| 3 | Every booking reserves a time range | A job that fits into the employee's working day must finish that day; only longer jobs (PPF, multi-layer ceramic) continue over following working days | A 1-hour job offered at 17:30 would otherwise "finish" the next morning |
+| 3 | Manage link stored as random token | Token = HMAC(`SECRET_KEY`, idempotency key); only its SHA-256 is stored | An idempotent retry can return the same link; rotating `SECRET_KEY` invalidates old links |
+| 3 | Rate limiter with its own DB session per request | Short transaction on its own connection, released before the endpoint runs | Holding two pooled connections per request can deadlock the pool under load |
+| 3 | Frontend calls the API via CORS | Next.js route `/api/v1/*` forwards to FastAPI (same origin, no build-time URL); in production Caddy routes `/api` directly | No CORS, no API URL baked into images |
+| 3 | All translations sent to the browser (next-intl default) | Layout sends only `Error`; booking pages add `Booking`/`Common`/`Manage` | Home page HTML 207 KB → 185 KB |
+| 3 | Telegram notification on new booking | Phase 6 (outbox + worker) | Not faking an integration before it exists; the audit log already records every booking |

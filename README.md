@@ -4,16 +4,17 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 2 — Public website.** Public pages in ru / kk / en are served from the API
-> with demo content. Online booking (Phase 3) and the admin panel (Phases 4–5) are not built
-> yet; `/booking` is a placeholder with phone / WhatsApp / Telegram links.
+> **Status: Phase 3 — Pricing and booking.** Public site (ru / kk / en), live price
+> calculator and a 7-step online booking with server-side availability and database-level
+> double-booking protection. The admin panel (Phases 4–5) and Telegram notifications
+> (Phase 6) are not built yet: new bookings stay `pending` and are visible only in the database.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
 
 | Part | Tech |
 |---|---|
-| Web (`apps/web`) | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl, lucide-react |
+| Web (`apps/web`) | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl, React Hook Form + Zod, lucide-react |
 | API (`apps/api`) | Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, psycopg 3 |
 | Database | PostgreSQL 18 |
 | Tooling | uv, npm, Ruff, pytest, ESLint, Vitest, openapi-typescript, Docker Compose, GitHub Actions |
@@ -71,7 +72,7 @@ API_INTERNAL_URL=http://localhost:8000 npm run dev
 ## Checks
 
 API (from `apps/api`, needs the `db` container — tests create and use a separate
-`<db>_test` database, so dev data is never touched):
+`<db>_test` database; destructive fixtures refuse to run against any other database):
 
 ```bash
 uv run ruff check . && uv run ruff format --check . && uv run pytest
@@ -112,6 +113,7 @@ API (`apps/api/app/config.py`, environment variables only):
 | `DATABASE_URL` | local compose db | `postgresql+psycopg://…` |
 | `CORS_ORIGINS` | `[]` | JSON list; empty in production (same origin behind the proxy) |
 | `LOG_LEVEL` | `INFO` | logs are JSON lines with `request_id` |
+| `SECRET_KEY` | dev placeholder | signs booking manage links; the API refuses to start in production without a real 32+ character value |
 
 Web:
 
@@ -122,9 +124,30 @@ Web:
 
 ## Public API (v1)
 
-`GET /api/v1/public/…` — `site`, `service-categories`, `vehicle-categories`, `services`
+Read: `GET /api/v1/public/…` — `site`, `service-categories`, `vehicle-categories`, `services`
 (`?category=&featured=`), `services/{slug}`, `gallery` (`?category=&service=&kind=`),
 `reviews`, `team`. Content endpoints take `?locale=ru|kk|en`.
+
+Booking (rate-limited per client IP):
+
+| Endpoint | What it does |
+|---|---|
+| `POST /quotes` | Price for `{service, vehicle, options[], addons[]}`: lines, best discount, total, duration. The only place prices are computed. |
+| `GET /availability?service=&vehicle=&options=&addons=&date_from=&date_to=` | Free start times per day (≤ 31 days), as `2026-11-24T10:00:00+05:00` plus a `10:00` label |
+| `POST /bookings` | Header `Idempotency-Key` (UUID). Re-checks price and availability, assigns an employee, returns the booking and a private manage token. 409 `SLOT_UNAVAILABLE` if taken. |
+| `POST /bookings/lookup` · `POST /bookings/cancel` | With the manage token in the body (never in a URL). Customers can cancel until `cancel_cutoff_hours` before the start. |
+
+### How double booking is prevented
+
+1. The availability engine (`app/modules/scheduling/engine.py`, pure functions) offers only
+   starts where a qualified employee is free for the job plus the buffer.
+2. On booking, everything is recomputed on the server; client prices are never accepted.
+3. PostgreSQL has the final word: an exclusion constraint forbids overlapping active
+   bookings for one employee. A concurrent loser gets 409. A test fires 20 simultaneous
+   requests at one slot and asserts exactly one succeeds.
+
+Booking rules (slot step, buffer, lead time, horizon, cancel cutoff, max active bookings per
+phone) live in `business_settings.data.booking` with defaults in `BookingPolicy`.
 
 Every error is `application/problem+json`: `{type, title, status, code, detail, request_id, errors[]}`;
 every response carries `X-Request-ID`.
@@ -134,7 +157,8 @@ every response carries `X-Request-ID`.
 The seed (`apps/api/app/seed.py`) is a **demo**. The site labels it as such:
 
 - Contacts and address are placeholders (`+7 700 000 00 00`, `hello@example.com`, “Demo address”).
-- Prices and durations are examples.
+- Prices, durations, discounts (“Кузов + салон” −10 %, 3+ services −5 %) and staff
+  schedules (Ерлан Mon–Fri 9–18, Дмитрий Tue–Sat 10–19) are examples.
 - Reviews and team profiles are flagged `is_demo` and show a “Demo” badge. No rating
   markup (JSON-LD) is ever produced from them.
 - There are no photos yet: images render as a labelled line-art illustration until real

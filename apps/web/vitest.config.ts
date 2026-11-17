@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.{ts,tsx}"],
     environment: "jsdom",
+    setupFiles: ["./vitest.setup.ts"],
     // next-intl imports "next/navigation" without an extension; let Vite resolve it.
     server: { deps: { inline: ["next-intl"] } },
   },

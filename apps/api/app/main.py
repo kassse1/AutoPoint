@@ -14,6 +14,7 @@ from app.config import get_settings
 from app.db import get_session
 from app.errors import AppError, problem, register_error_handlers
 from app.logs import request_id_var, setup_logging
+from app.modules.bookings import public as bookings_public
 from app.modules.catalog import public as catalog_public
 from app.modules.media import public as media_public
 from app.modules.site import public as site_public
@@ -90,7 +91,7 @@ def create_app() -> FastAPI:
             request_id_var.reset(token)
 
     app.include_router(health)
-    for module in (catalog_public, media_public, site_public, staff_public):
+    for module in (catalog_public, media_public, site_public, staff_public, bookings_public):
         app.include_router(module.router, prefix="/api/v1")
     return app
 

@@ -4,9 +4,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 from sqlalchemy import CheckConstraint, DateTime, SmallInteger, Time, func
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from app.db import Base
+from app.errors import AppError
 from app.i18n import I18nText, Locale
 
 
@@ -68,3 +69,22 @@ class SiteSettings(BaseModel):
     enabled_locales: list[Locale] = Field(default=["ru", "kk", "en"], min_length=1)
     timezone: str = "Asia/Almaty"
     currency: Literal["KZT"] = "KZT"
+    booking: "BookingPolicy" = Field(default_factory=lambda: BookingPolicy())
+
+
+class BookingPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    slot_step_min: int = Field(default=30, ge=5, le=240)  # grid of offered start times
+    buffer_min: int = Field(default=30, ge=0, le=240)  # cleanup time blocked after each job
+    lead_time_min: int = Field(default=120, ge=0, le=7 * 24 * 60)  # earliest start from now
+    horizon_days: int = Field(default=60, ge=1, le=365)  # how far ahead customers can book
+    cancel_cutoff_hours: int = Field(default=24, ge=0, le=14 * 24)  # self-cancel allowed until
+    max_active_per_phone: int = Field(default=3, ge=1, le=20)  # anti slot-hoarding
+
+
+def get_site_settings(session: Session) -> SiteSettings:
+    row = session.get(BusinessSettings, 1)
+    if row is None:
+        raise AppError(503, "SITE_NOT_CONFIGURED", "Run the seed or configure settings")
+    return SiteSettings.model_validate(row.data)

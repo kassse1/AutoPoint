@@ -81,10 +81,22 @@
       "eyebrow": "Why us",
       "title": "An approach you can trust with your car",
       "items": {
-        "1": { "title": "Honest quotes", "text": "We price after inspection and never change it without your consent." },
-        "2": { "title": "Diagnostics first", "text": "We measure paint thickness and show which defects can be fixed." },
-        "3": { "title": "Studio lighting", "text": "We check the result under several light sources, not outside." },
-        "4": { "title": "On-time delivery", "text": "We agree the timing up front and keep you posted." }
+        "1": {
+          "title": "Honest quotes",
+          "text": "We price after inspection and never change it without your consent."
+        },
+        "2": {
+          "title": "Diagnostics first",
+          "text": "We measure paint thickness and show which defects can be fixed."
+        },
+        "3": {
+          "title": "Studio lighting",
+          "text": "We check the result under several light sources, not outside."
+        },
+        "4": {
+          "title": "On-time delivery",
+          "text": "We agree the timing up front and keep you posted."
+        }
       }
     },
     "process": {
@@ -92,10 +104,22 @@
       "title": "Four steps from request to handover",
       "lead": "A clear process with no hidden stages.",
       "steps": {
-        "1": { "title": "Request", "text": "Choose a service and time online or message us." },
-        "2": { "title": "Inspection & quote", "text": "We assess the car and agree the price." },
-        "3": { "title": "Work", "text": "We do the work in the studio with checks at every stage." },
-        "4": { "title": "Handover", "text": "We show you the result and explain aftercare." }
+        "1": {
+          "title": "Request",
+          "text": "Choose a service and time online or message us."
+        },
+        "2": {
+          "title": "Inspection & quote",
+          "text": "We assess the car and agree the price."
+        },
+        "3": {
+          "title": "Work",
+          "text": "We do the work in the studio with checks at every stage."
+        },
+        "4": {
+          "title": "Handover",
+          "text": "We show you the result and explain aftercare."
+        }
       }
     },
     "reviews": {
@@ -106,12 +130,30 @@
       "eyebrow": "Questions",
       "title": "Frequently asked questions",
       "items": {
-        "1": { "q": "Why do prices start “from”?", "a": "The price depends on vehicle size, paint condition and options. We confirm the exact price after inspection, before any work begins." },
-        "2": { "q": "How long does ceramic coating take?", "a": "Usually one to two working days including preparation and polishing. The exact time depends on the number of layers." },
-        "3": { "q": "Does the car need polishing before coating or film?", "a": "Yes — a coating locks in the current state of the paint, so we remove defects first." },
-        "4": { "q": "Can I leave the car for several days?", "a": "Yes. For long jobs such as film installation, the car stays in the studio for the whole job." },
-        "5": { "q": "How do I care for the car after coating?", "a": "At handover we explain which washes to use and when the first wash is safe." },
-        "6": { "q": "How do I book?", "a": "Online, by phone, or via WhatsApp and Telegram. We'll find a convenient time." }
+        "1": {
+          "q": "Why do prices start “from”?",
+          "a": "The price depends on vehicle size, paint condition and options. We confirm the exact price after inspection, before any work begins."
+        },
+        "2": {
+          "q": "How long does ceramic coating take?",
+          "a": "Usually one to two working days including preparation and polishing. The exact time depends on the number of layers."
+        },
+        "3": {
+          "q": "Does the car need polishing before coating or film?",
+          "a": "Yes — a coating locks in the current state of the paint, so we remove defects first."
+        },
+        "4": {
+          "q": "Can I leave the car for several days?",
+          "a": "Yes. For long jobs such as film installation, the car stays in the studio for the whole job."
+        },
+        "5": {
+          "q": "How do I care for the car after coating?",
+          "a": "At handover we explain which washes to use and when the first wash is safe."
+        },
+        "6": {
+          "q": "How do I book?",
+          "a": "Online, by phone, or via WhatsApp and Telegram. We'll find a convenient time."
+        }
       }
     },
     "location": {
@@ -178,10 +220,22 @@
       "eyebrow": "Standards",
       "title": "The rules we work by",
       "items": {
-        "1": { "title": "Inspection before work", "text": "We record the car's condition and agree the scope." },
-        "2": { "title": "Safe washing", "text": "Two-phase wash and clean tools for every car." },
-        "3": { "title": "Checked under studio light", "text": "Every panel is inspected before handover." },
-        "4": { "title": "Aftercare advice", "text": "We explain how to keep the result for as long as possible." }
+        "1": {
+          "title": "Inspection before work",
+          "text": "We record the car's condition and agree the scope."
+        },
+        "2": {
+          "title": "Safe washing",
+          "text": "Two-phase wash and clean tools for every car."
+        },
+        "3": {
+          "title": "Checked under studio light",
+          "text": "Every panel is inspected before handover."
+        },
+        "4": {
+          "title": "Aftercare advice",
+          "text": "We explain how to keep the result for as long as possible."
+        }
       }
     },
     "team": {
@@ -209,22 +263,112 @@
     }
   },
   "Booking": {
-    "metaTitle": "Booking",
+    "metaTitle": "Online booking",
     "eyebrow": "Booking",
     "title": "Book a convenient time",
-    "lead": "Online booking is coming soon. Meanwhile, call or message us — we'll find a time and give you a price estimate."
+    "lead": "Choose a service and time — the price is calculated instantly. We'll contact you to confirm.",
+    "progress": "Booking steps",
+    "done": "done",
+    "stepOf": "Step {current} of {total}",
+    "steps": {
+      "service": "Choose a service",
+      "vehicle": "Vehicle class",
+      "options": "Options and extra services",
+      "datetime": "Date and time",
+      "contacts": "Your details",
+      "review": "Review your booking",
+      "confirm": "Confirmation"
+    },
+    "next": "Next",
+    "back": "Back",
+    "edit": "Edit",
+    "confirm": "Confirm booking",
+    "submitting": "Sending your booking…",
+    "options": {
+      "choose": "Choose one",
+      "extras": "Extras for this service",
+      "included": "included",
+      "addons": "Add other services",
+      "addonsLead": "Done in the same visit. The total is shown on the right."
+    },
+    "datetime": {
+      "earlier": "Earlier",
+      "later": "Later",
+      "loading": "Looking for free times…",
+      "day": "Day",
+      "time": "Start time",
+      "none": "No free times on these dates — try later dates.",
+      "timezone": "Times are in Astana time (UTC+5)."
+    },
+    "contacts": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "vehicleNote": "Make and model",
+      "comment": "Comment",
+      "consent": "I agree to the processing of my personal data under the <link>privacy policy</link>"
+    },
+    "review": {
+      "service": "Service",
+      "vehicle": "Vehicle",
+      "datetime": "Date and time",
+      "contacts": "Contact details"
+    },
+    "summary": {
+      "title": "Your estimate",
+      "empty": "Choose a service to see the price.",
+      "pickVehicle": "Choose a vehicle class to see the price.",
+      "subtotal": "Subtotal",
+      "discount": "Discount “{name}”",
+      "total": "Total",
+      "duration": "Duration"
+    },
+    "pendingNote": "Bookings are confirmed by our manager — we'll call you.",
+    "validation": {
+      "nameTooShort": "Enter your name (at least 2 characters).",
+      "phoneInvalid": "Check the number, e.g. +7 700 123 45 67.",
+      "emailInvalid": "Check the email address.",
+      "consentRequired": "Consent to data processing is required.",
+      "tooLong": "This text is too long."
+    },
+    "errors": {
+      "SLOT_UNAVAILABLE": "This time was just taken. Please choose another.",
+      "TOO_MANY_ACTIVE_BOOKINGS": "This phone number already has several upcoming bookings. Call us if you need another one.",
+      "RATE_LIMITED": "Too many attempts. Please wait a moment and try again.",
+      "NETWORK": "Can't reach the server. Check your connection and try again.",
+      "generic": "We couldn't send your booking. Try again or call us.",
+      "quote": "We couldn't calculate a price for this selection."
+    }
   },
   "Privacy": {
     "title": "Privacy policy",
     "lead": "How we process the personal data of website visitors and clients.",
     "templateNotice": "This is a template for a demo website. A lawyer must review it before launch.",
     "sections": {
-      "1": { "title": "Who processes your data", "text": "The data controller is {business}. For questions about your data, contact: {email}." },
-      "2": { "title": "What we collect", "text": "Your name, phone number, optionally an email address, vehicle make and model, and a booking comment." },
-      "3": { "title": "Why", "text": "To book your service, contact you to confirm it and answer your request. We don't send marketing without separate consent." },
-      "4": { "title": "Legal basis", "text": "Processing is based on your consent under the Law of the Republic of Kazakhstan “On Personal Data and Their Protection”." },
-      "5": { "title": "Storage and sharing", "text": "Data is kept for as long as needed to provide services and meet legal requirements, and is not shared with third parties except where required by law." },
-      "6": { "title": "Your rights", "text": "You can request access to, correction or deletion of your data, or withdraw consent, by writing to: {email}." }
+      "1": {
+        "title": "Who processes your data",
+        "text": "The data controller is {business}. For questions about your data, contact: {email}."
+      },
+      "2": {
+        "title": "What we collect",
+        "text": "Your name, phone number, optionally an email address, vehicle make and model, and a booking comment."
+      },
+      "3": {
+        "title": "Why",
+        "text": "To book your service, contact you to confirm it and answer your request. We don't send marketing without separate consent."
+      },
+      "4": {
+        "title": "Legal basis",
+        "text": "Processing is based on your consent under the Law of the Republic of Kazakhstan “On Personal Data and Their Protection”."
+      },
+      "5": {
+        "title": "Storage and sharing",
+        "text": "Data is kept for as long as needed to provide services and meet legal requirements, and is not shared with third parties except where required by law."
+      },
+      "6": {
+        "title": "Your rights",
+        "text": "You can request access to, correction or deletion of your data, or withdraw consent, by writing to: {email}."
+      }
     }
   },
   "NotFound": {
@@ -237,5 +381,51 @@
     "title": "Something went wrong",
     "lead": "We couldn't load this page. Please try again in a minute.",
     "retry": "Try again"
+  },
+  "Manage": {
+    "metaTitle": "Your booking",
+    "loading": "Loading your booking…",
+    "created": "Booking created",
+    "createdLead": "Our manager will contact you to confirm. Keep this page — the link lets you check or cancel your booking.",
+    "reference": "Booking number",
+    "when": "When",
+    "until": "Ready: {when}",
+    "vehicle": "Vehicle",
+    "contact": "Contact",
+    "services": "Services and price",
+    "status": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No-show"
+    },
+    "addToCalendar": "Add to calendar",
+    "whatsappText": "Hello! A question about booking {reference}.",
+    "cancel": {
+      "title": "Cancel booking",
+      "until": "You can cancel online until {when}.",
+      "start": "Cancel booking",
+      "reason": "Reason (optional)",
+      "confirm": "Yes, cancel",
+      "keep": "Keep booking",
+      "tooLate": "Online cancellation is no longer available — please call us.",
+      "failed": "Couldn't cancel. Please try again."
+    },
+    "errors": {
+      "missing": {
+        "title": "Incomplete link",
+        "lead": "Open the full booking link or make a new booking."
+      },
+      "notFound": {
+        "title": "Booking not found",
+        "lead": "The link is wrong or expired. Call us and we'll find it by number."
+      },
+      "generic": {
+        "title": "Couldn't load the booking",
+        "lead": "Please refresh the page a bit later."
+      }
+    }
   }
 }

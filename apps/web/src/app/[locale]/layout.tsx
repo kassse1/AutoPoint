@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import type { CSSProperties } from "react";
 import { MobileActionBar, SiteFooter, SiteHeader } from "@/components/site/Chrome";
 import { routing, type Locale } from "@/i18n/routing";
@@ -37,6 +37,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const site = await api.site(locale);
   if (!site.enabled_locales.includes(locale)) notFound();
   const t = await getTranslations("Nav");
+  const messages = await getMessages();
 
   return (
     <html
@@ -46,7 +47,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       style={{ "--color-accent": site.accent_color } as CSSProperties}
     >
       <body className="flex min-h-dvh flex-col">
-        <NextIntlClientProvider>
+        {/* Only what client components need everywhere; pages add their own namespaces. */}
+        <NextIntlClientProvider messages={{ Error: messages.Error }}>
           <a
             href="#content"
             className="sr-only z-50 bg-accent px-4 py-2 text-accent-fg focus:not-sr-only focus:fixed focus:top-2 focus:left-2"

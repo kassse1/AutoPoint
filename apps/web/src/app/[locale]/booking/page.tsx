@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { ButtonAnchor, Section, SectionHeader } from "@/components/ui/primitives";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { BookingWizard } from "@/components/booking/BookingWizard";
+import { Section, SectionHeader } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/routing";
 import { api } from "@/lib/api/client";
-import { telegramHref, telHref, whatsappHref } from "@/lib/format";
 import { pageMetadata } from "@/lib/seo";
 
-// Phase 2 placeholder: the online booking wizard replaces this page in Phase 3.
+// Depends on ?service=… in the URL, so it renders per request instead of being cached.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: PageProps<"/[locale]/booking">): Promise<Metadata> {
   const locale = (await params).locale as Locale;
   const [t, site] = await Promise.all([getTranslations("Booking"), api.site(locale)]);
@@ -16,24 +19,23 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/booking"
   };
 }
 
-export default async function BookingPage({ params }: PageProps<"/[locale]/booking">) {
+export default async function BookingPage({ params, searchParams }: PageProps<"/[locale]/booking">) {
   const locale = (await params).locale as Locale;
-  const [t, tc, site] = await Promise.all([getTranslations("Booking"), getTranslations("Common"), api.site(locale)]);
+  const requested = (await searchParams).service;
+  const [t, messages, services, vehicles] = await Promise.all([
+    getTranslations("Booking"),
+    getMessages(),
+    api.services(locale),
+    api.vehicleCategories(locale),
+  ]);
+  const initial = typeof requested === "string" && services.some((s) => s.slug === requested) ? requested : null;
   return (
     <Section>
       <SectionHeader as="h1" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")} />
-      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <ButtonAnchor href={telHref(site.phone)}>{tc("call")}</ButtonAnchor>
-        {site.whatsapp && (
-          <ButtonAnchor variant="secondary" href={whatsappHref(site.whatsapp, tc("whatsappText", { business: site.business_name }))}>
-            WhatsApp
-          </ButtonAnchor>
-        )}
-        {site.telegram && (
-          <ButtonAnchor variant="secondary" href={telegramHref(site.telegram)}>
-            Telegram
-          </ButtonAnchor>
-        )}
+      <div className="mt-12">
+        <NextIntlClientProvider messages={{ Booking: messages.Booking, Common: messages.Common }}>
+          <BookingWizard locale={locale} services={services} vehicles={vehicles} initialService={initial} />
+        </NextIntlClientProvider>
       </div>
     </Section>
   );
