@@ -1,0 +1,42 @@
+# Render Blueprint: Dashboard → New → Blueprint → pick this repository.
+# Free plan: the website, API and notification worker run in ONE container (free web services
+# cannot receive private-network traffic, so a separate API service would not be reachable).
+# See README → "Deploy to Render" for the limits of the free plan.
+services:
+  - type: web
+    name: autopoint
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./deploy/render.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/public/site
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: autopoint-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MEDIA_ROOT
+        value: /data/media
+      # First owner account, created on start if it does not exist yet (password ≥ 10 chars).
+      - key: OWNER_EMAIL
+        sync: false
+      - key: AUTOPOINT_PASSWORD
+        sync: false
+      # Optional: Telegram staff notifications. Leave empty to keep them queued.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+
+databases:
+  - name: autopoint-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "18"
+    databaseName: autopoint
+    user: autopoint

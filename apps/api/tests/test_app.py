@@ -116,3 +116,27 @@ def test_migrations_upgrade_and_downgrade() -> None:
         assert {"btree_gist", "citext"} <= extensions()
     finally:
         engine.dispose()
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["postgres://u:p@h:5432/d", "postgresql://u:p@h:5432/d", "postgresql+psycopg://u:p@h:5432/d"],
+)
+def test_database_url_uses_psycopg(url):
+    from app.config import Settings
+
+    assert Settings(database_url=url).database_url == "postgresql+psycopg://u:p@h:5432/d"
+
+
+@pytest.mark.parametrize("module", ["app.seed", "app.manage", "app.worker"])
+def test_cli_modules_resolve_all_foreign_keys(module):
+    # A fresh interpreter, like `python -m app.seed` on a new install: every FK target
+    # must be importable without app.main having loaded the other models first.
+    import subprocess
+    import sys
+
+    code = (
+        f"import {module}; from app.db import Base; "
+        "[fk.column for t in Base.metadata.tables.values() for fk in t.foreign_keys]"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603 - fixed test input

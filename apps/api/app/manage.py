@@ -12,6 +12,7 @@ import sys
 
 from sqlalchemy import select
 
+import app.models  # noqa: F401 - all mappers, run standalone (fresh database)
 from app.db import SessionLocal
 from app.modules.audit.models import record
 from app.modules.auth.models import ROLES, User

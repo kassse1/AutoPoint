@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _DEV_SECRET = "dev-only-insecure-secret-change-me"  # noqa: S105 - rejected in production below
@@ -31,6 +31,15 @@ class Settings(BaseSettings):
     @property
     def expose_docs(self) -> bool:
         return self.environment != "production"
+
+    @field_validator("database_url")
+    @classmethod
+    def _use_psycopg(cls, url: str) -> str:
+        # Hosting providers (Render, Heroku) give postgres:// or postgresql://; we use psycopg 3.
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url.removeprefix(prefix)
+        return url
 
     @model_validator(mode="after")
     def _production_needs_real_secret(self) -> "Settings":

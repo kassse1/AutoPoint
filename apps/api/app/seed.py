@@ -10,6 +10,7 @@ from datetime import date, time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+import app.models  # noqa: F401 - all mappers, run standalone (fresh database)
 from app.db import SessionLocal
 from app.modules.catalog.models import (
     PriceEntry,
