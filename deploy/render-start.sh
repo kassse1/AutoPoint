@@ -17,6 +17,9 @@ fi
 
 uvicorn app.main:app --host 127.0.0.1 --port 8000 &
 python -m app.worker &
-node /web/server.js &
-wait -n
-exit $?
+# Render overrides HOSTNAME with the instance name, which Next.js cannot bind to.
+HOSTNAME=0.0.0.0 node /web/server.js &
+status=0
+wait -n || status=$?
+echo "A process exited (status $status); stopping the container" >&2
+exit "$status"
