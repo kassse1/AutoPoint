@@ -32,6 +32,7 @@ class Permission(StrEnum):
     USERS_MANAGE = "users.manage"
     AUDIT_READ = "audit.read"
     ANALYTICS_READ = "analytics.read"  # dashboard figures incl. recorded revenue
+    MEDIA_WRITE = "media.write"  # uploads, gallery, reviews
 
 
 P = Permission
@@ -48,6 +49,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             P.SCHEDULES_WRITE,
             P.STAFF_READ,
             P.ANALYTICS_READ,
+            P.MEDIA_WRITE,
         }
     ),
     "employee": frozenset({P.BOOKINGS_READ, P.BOOKINGS_WORK}),

@@ -24,6 +24,10 @@ services:
       ENVIRONMENT: development
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-autopoint}:${POSTGRES_PASSWORD:-autopoint}@db:5432/${POSTGRES_DB:-autopoint}
       CORS_ORIGINS: '["http://localhost:3000"]'
+      PUBLIC_URL: ${SITE_URL:-http://localhost:3000}
+      MEDIA_ROOT: /data/media
+    volumes:
+      - media:/data/media
     # Dev stack only: apply migrations and load demo content (skipped if already configured).
     command: ["sh", "-c", "alembic upgrade head && python -m app.seed && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
     ports:
@@ -36,6 +40,20 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  # Delivers the notification outbox to Telegram (and housekeeping). Without
+  # TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID it runs but leaves notifications queued.
+  worker:
+    build: apps/api
+    command: ["python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-autopoint}:${POSTGRES_PASSWORD:-autopoint}@db:5432/${POSTGRES_DB:-autopoint}
+      PUBLIC_URL: ${SITE_URL:-http://localhost:3000}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    depends_on:
+      api:
+        condition: service_healthy  # migrations have run
 
   web:
     build: apps/web
@@ -50,3 +68,4 @@ services:
 
 volumes:
   pgdata:
+  media:

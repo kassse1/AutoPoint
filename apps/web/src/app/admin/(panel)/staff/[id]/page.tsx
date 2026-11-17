@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Btn, Card, cleanI18n, ErrorBox, Field, I18nInputs, inputCls, Loading, Notice, PageHeader } from "@/components/admin/ui";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { normalizeWeek, WeekEditor } from "@/components/admin/WeekEditor";
 import { api, type AdminService, type Employee, type Interval, type User } from "@/lib/admin/api";
 import { useAuth } from "@/lib/admin/auth";
@@ -57,7 +58,8 @@ export default function EmployeePage() {
             <fieldset disabled={!staffWrite} className="space-y-4">
               <Field label={t("name")} htmlFor="e-name"><input id="e-name" required minLength={2} value={e.display_name} onChange={(ev) => setProfile({ ...e, display_name: ev.target.value })} className={inputCls} /></Field>
               <I18nInputs id="e-pos" label={t("position")} value={e.position_i18n} onChange={(v) => setProfile({ ...e, position_i18n: v as Employee["position_i18n"] })} />
-              <I18nInputs id="e-bio" label={t("bio")} multiline value={e.bio_i18n} onChange={(v) => setProfile({ ...e, bio_i18n: v as Employee["bio_i18n"] })} />
+              <ImageUpload label={t("photo")} value={e.photo_url} disabled={!staffWrite} onChange={(url) => setProfile({ ...e, photo_url: url })} />
+              <I18nInputs id="e-bio" required={false} label={t("bio")} multiline value={e.bio_i18n} onChange={(v) => setProfile({ ...e, bio_i18n: v as Employee["bio_i18n"] })} />
               {can("users.manage") && (
                 <Field label={t("login")} htmlFor="e-user" hint={t("loginHint")}>
                   <select id="e-user" value={e.user_id ?? ""} onChange={(ev) => setProfile({ ...e, user_id: ev.target.value || null })} className={inputCls}>

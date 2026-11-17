@@ -10,8 +10,10 @@ from app.modules.catalog.models import (  # noqa: F401
     ServiceOption,
     VehicleCategory,
 )
+from app.modules.contact.models import ContactMessage  # noqa: F401
 from app.modules.customers.models import Customer  # noqa: F401
 from app.modules.media.models import GalleryImage, Review  # noqa: F401
+from app.modules.notifications.models import Notification  # noqa: F401
 from app.modules.pricing.models import DiscountRule, DiscountRuleService  # noqa: F401
 from app.modules.scheduling.models import (  # noqa: F401
     EmployeeSchedule,

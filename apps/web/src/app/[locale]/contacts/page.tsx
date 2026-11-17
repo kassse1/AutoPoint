@@ -1,6 +1,8 @@
 import { Mail, MessageCircle, Phone, Send } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { ContactForm } from "@/components/site/ContactForm";
 import { MapEmbed } from "@/components/site/MapEmbed";
 import { OpeningHoursList } from "@/components/site/OpeningHours";
 import { Section, SectionHeader } from "@/components/ui/primitives";
@@ -23,7 +25,12 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/contacts
 
 export default async function ContactsPage({ params }: PageProps<"/[locale]/contacts">) {
   const locale = (await params).locale as Locale;
-  const [t, tc, site] = await Promise.all([getTranslations("Contacts"), getTranslations("Common"), api.site(locale)]);
+  const [t, tc, site, messages] = await Promise.all([
+    getTranslations("Contacts"),
+    getTranslations("Common"),
+    api.site(locale),
+    getMessages(),
+  ]);
 
   const channels = [
     { icon: Phone, label: t("phone"), value: phoneDisplay(site.phone), href: telHref(site.phone) },
@@ -91,6 +98,20 @@ export default async function ContactsPage({ params }: PageProps<"/[locale]/cont
           />
         </div>
       </div>
+
+      <section aria-labelledby="contact-form-title" className="mt-20 grid gap-10 border-t border-line pt-16 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <h2 id="contact-form-title" className="font-display text-2xl font-semibold sm:text-3xl">
+            {t("formTitle")}
+          </h2>
+          <p className="mt-4 text-fg-muted">{t("formLead")}</p>
+        </div>
+        <div className="lg:col-span-8">
+          <NextIntlClientProvider messages={{ ContactForm: messages.ContactForm }}>
+            <ContactForm locale={locale} />
+          </NextIntlClientProvider>
+        </div>
+      </section>
     </Section>
   );
 }

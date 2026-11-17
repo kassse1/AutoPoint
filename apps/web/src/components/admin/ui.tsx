@@ -221,19 +221,22 @@ export function Dialog({
 const LOCALES = ["ru", "kk", "en"] as const;
 type I18n = Partial<Record<(typeof LOCALES)[number], string>>;
 
-/** One input per language; Russian is required (the API rejects texts without it). */
+/** One input per language. For required texts Russian must be filled (the API rejects
+ * texts without it); optional texts (captions, bios) may stay empty in every language. */
 export function I18nInputs({
   id,
   label,
   value,
   onChange,
   multiline = false,
+  required = true,
 }: {
   id: string;
   label: string;
   value: I18n | null | undefined;
   onChange: (value: I18n) => void;
   multiline?: boolean;
+  required?: boolean;
 }) {
   const Tag = multiline ? "textarea" : "input";
   return (
@@ -243,12 +246,12 @@ export function I18nInputs({
         <div key={locale} className="flex items-start gap-2">
           <label htmlFor={`${id}-${locale}`} className="w-8 pt-2.5 text-xs text-fg-muted uppercase">
             {locale}
-            {locale === "ru" && <span aria-hidden="true" className="text-accent">*</span>}
+            {required && locale === "ru" && <span aria-hidden="true" className="text-accent">*</span>}
           </label>
           <Tag
             id={`${id}-${locale}`}
             value={value?.[locale] ?? ""}
-            required={locale === "ru"}
+            required={required && locale === "ru"}
             rows={multiline ? 3 : undefined}
             onChange={(e) => onChange({ ...value, [locale]: e.target.value })}
             className={`${inputCls} ${multiline ? "py-2" : ""}`}

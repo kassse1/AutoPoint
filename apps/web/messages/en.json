@@ -260,7 +260,9 @@
       "2gis": "Open in 2GIS",
       "yandex": "Open in Yandex Maps",
       "google": "Open in Google Maps"
-    }
+    },
+    "formTitle": "Write to us",
+    "formLead": "We reply during opening hours — by phone or messenger."
   },
   "Booking": {
     "metaTitle": "Online booking",
@@ -426,6 +428,32 @@
         "title": "Couldn't load the booking",
         "lead": "Please refresh the page a bit later."
       }
+    }
+  },
+  "ContactForm": {
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "message": "Message",
+    "consent": "I agree to the processing of my personal data under the <link>privacy policy</link>",
+    "submit": "Send",
+    "sending": "Sending…",
+    "sentTitle": "Message sent",
+    "sentLead": "Thank you! We'll get back to you during opening hours.",
+    "validation": {
+      "nameTooShort": "Enter your name (at least 2 characters).",
+      "phoneInvalid": "Check the number, e.g. +7 700 123 45 67.",
+      "emailInvalid": "Check the email address.",
+      "messageTooShort": "Please write a few words (10+ characters).",
+      "consentRequired": "Consent to data processing is required.",
+      "tooLong": "This text is too long."
+    },
+    "errors": {
+      "TOO_FAST": "Too fast — wait a couple of seconds and send again.",
+      "FORM_EXPIRED": "This page was open too long. Refresh it and send again.",
+      "RATE_LIMITED": "Too many messages. Try later or call us.",
+      "NETWORK": "Can't reach the server. Check your connection and try again.",
+      "generic": "Couldn't send. Try again or call us."
     }
   }
 }

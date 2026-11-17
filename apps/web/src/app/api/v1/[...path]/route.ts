@@ -13,7 +13,16 @@ const REQUEST_HEADERS = [
   "x-requested-with",
   "cookie", // the refresh cookie (path /api/v1/auth) for the admin login
 ];
-const RESPONSE_HEADERS = ["content-type", "x-request-id", "retry-after", "www-authenticate"];
+const RESPONSE_HEADERS = [
+  "content-type",
+  "x-request-id",
+  "retry-after",
+  "www-authenticate",
+  "cache-control",
+  "etag",
+  "last-modified",
+  "x-content-type-options",
+];
 
 async function forward(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
@@ -28,7 +37,8 @@ async function forward(request: NextRequest, { params }: { params: Promise<{ pat
   const upstream = await fetch(url, {
     method: request.method,
     headers,
-    body: request.method === "GET" ? undefined : await request.text(),
+    // Raw bytes, not text: image uploads are binary multipart bodies.
+    body: request.method === "GET" ? undefined : await request.arrayBuffer(),
     cache: "no-store",
   });
 

@@ -4,11 +4,11 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 5 — Admin panel.** Public site (ru / kk / en), live price calculator,
-> 7-step online booking with database-level double-booking protection, and the staff admin
-> at `/admin`: dashboard, bookings (table + day calendar), customers, services and price
-> matrix, discounts, staff and schedules, holidays, site settings, users, audit log.
-> Telegram notifications and image uploads are Phase 6.
+> **Status: Phase 6 — Integrations.** Public site (ru / kk / en) with contact form, live
+> price calculator, 7-step online booking with database-level double-booking protection,
+> the staff admin at `/admin` (dashboard, bookings, customers, messages, services and price
+> matrix, discounts, gallery, reviews, staff and schedules, settings, notifications, users,
+> audit log), image uploads, and Telegram staff notifications through an outbox worker.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
@@ -26,7 +26,7 @@ configuration.
 apps/api      FastAPI app (app/), migrations (migrations/), tests (tests/), openapi.json
 apps/web      Next.js: public site (src/app/[locale]/…), admin (src/app/admin/…), translations (messages/)
 docs/         architecture and decisions
-compose.yml   local stack: db, api, web
+compose.yml   local stack: db, api, worker, web
 .github/      CI workflow
 ```
 
@@ -149,6 +149,48 @@ How login works:
 Permissions are enforced in the API (`app/modules/auth/permissions.py`). A test walks every
 admin route and checks it against every role.
 
+## Integrations
+
+**Telegram staff notifications.** Events (new booking, confirmation, cancellation,
+reschedule, contact message, account lockout, token reuse) are written to the
+`notification_outbox` table *in the same transaction* as the change. The `worker` service
+(`python -m app.worker`) delivers them:
+- **Retries:** failures are retried with backoff (30 s doubling to 1 h, plus jitter);
+  Telegram's `retry_after` is honoured.
+- **Failures:** after 8 attempts, or on a permanent error (wrong token or chat), a
+  notification is marked failed and can be retried from Admin → Уведомления.
+- **Safe parallel runs:** several workers can run at once without sending the same message.
+- **Privacy:** messages contain no customer names, phones or texts, only the reference,
+  services, time and an admin link.
+
+To enable it, put these in `.env` and restart: `docker compose up -d worker`. Admin →
+Уведомления → «Отправить тестовое» checks the setup.
+
+```
+TELEGRAM_BOT_TOKEN=123456:ABC…   # from @BotFather
+TELEGRAM_CHAT_ID=-100…           # the team chat (add the bot to it)
+```
+
+Without these variables the site works normally, notifications wait in the queue, and the
+admin shows "Telegram не настроен".
+
+**Contact form** (`/contacts`). Spam protection is a honeypot field, a signed
+"form opened at" token (too fast or older than 2 h is rejected) and 5 messages per hour per
+IP. Messages appear in Admin → Сообщения. No CAPTCHA, so no third-party scripts.
+
+**Images.** Admin uploads (gallery, service photos, staff photos, logo) accept JPEG, PNG or
+WebP files:
+- up to 10 MB and 40 megapixels;
+- decoded, rotated by EXIF, scaled to at most 2400 px and re-encoded to WebP, which strips
+  EXIF/GPS and anything embedded in the file;
+- stored under a random name and served at `/api/v1/media/…`, cached as immutable, with
+  `nosniff`.
+
+The files live in the `media` Docker volume (`MEDIA_ROOT`).
+
+**WhatsApp / Telegram / phone.** These are `wa.me`, `t.me` and `tel:` links with
+prefilled text. There is no WhatsApp Business API integration.
+
 ## Configuration
 
 API (`apps/api/app/config.py`, environment variables only):
@@ -160,6 +202,9 @@ API (`apps/api/app/config.py`, environment variables only):
 | `CORS_ORIGINS` | `[]` | JSON list; empty in production (same origin behind the proxy) |
 | `LOG_LEVEL` | `INFO` | logs are JSON lines with `request_id` |
 | `SECRET_KEY` | dev placeholder | signs booking manage links; the API refuses to start in production without a real 32+ character value |
+| `PUBLIC_URL` | `http://localhost:3000` | website address used in notification links |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | empty | staff notifications; empty = queued only |
+| `MEDIA_ROOT` | `media` (`/data/media` in Docker) | uploaded images |
 
 Web:
 

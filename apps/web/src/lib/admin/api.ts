@@ -24,6 +24,14 @@ export type Interval = S["Interval"];
 export type ScheduleException = S["ExceptionOut"];
 export type SiteSettings = S["SiteSettings"];
 export type User = S["UserOut"];
+export type GalleryItem = S["GalleryOut"];
+export type GalleryInput = S["GalleryIn"];
+export type AdminReview = S["AdminReview"];
+export type ContactMessage = S["MessageOut"];
+export type MessagesPage = S["Page_MessageOut_"];
+export type NotificationsPage = S["Page_NotificationOut_"];
+export type NotificationSummary = S["SummaryOut"];
+export type Upload = S["UploadOut"];
 
 export class ApiError extends Error {
   constructor(
@@ -64,13 +72,14 @@ export function refreshSession(): Promise<boolean> {
 
 export async function api<T>(
   path: string,
-  init: Omit<RequestInit, "body"> & { json?: unknown; idempotencyKey?: string } = {},
+  init: Omit<RequestInit, "body"> & { json?: unknown; form?: FormData; idempotencyKey?: string } = {},
 ): Promise<T> {
-  const { json, idempotencyKey, ...rest } = init;
+  const { json, form, idempotencyKey, ...rest } = init;
   const send = () =>
     fetch(`/api/v1${path}`, {
       ...rest,
-      body: json === undefined ? undefined : JSON.stringify(json),
+      // FormData sets its own multipart Content-Type (with the boundary).
+      body: form ?? (json === undefined ? undefined : JSON.stringify(json)),
       headers: {
         ...(json === undefined ? {} : { "Content-Type": "application/json" }),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),

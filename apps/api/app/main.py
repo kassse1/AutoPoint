@@ -6,6 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -21,8 +22,13 @@ from app.modules.bookings import admin as bookings_admin
 from app.modules.bookings import public as bookings_public
 from app.modules.catalog import admin as catalog_admin
 from app.modules.catalog import public as catalog_public
+from app.modules.contact import admin as contact_admin
+from app.modules.contact import public as contact_public
 from app.modules.customers import admin as customers_admin
+from app.modules.media import admin as media_admin
 from app.modules.media import public as media_public
+from app.modules.media import upload as media_upload
+from app.modules.notifications import admin as notifications_admin
 from app.modules.pricing import admin as pricing_admin
 from app.modules.site import admin as site_admin
 from app.modules.site import public as site_public
@@ -92,6 +98,10 @@ def create_app() -> FastAPI:
                 logger.exception("Unhandled error")
                 response = problem(500, "INTERNAL_ERROR")
             response.headers["X-Request-ID"] = request_id
+            if request.url.path.startswith(media_upload.MEDIA_URL):
+                # Uploaded files have unique names: cache forever; never sniff a type.
+                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                response.headers["X-Content-Type-Options"] = "nosniff"
             logger.info(
                 "request",
                 extra={
@@ -122,8 +132,14 @@ def create_app() -> FastAPI:
         site_admin.router,
         audit_admin.router,
         analytics_admin.router,
+        contact_public.router,
+        contact_admin.router,
+        media_admin.router,
+        media_upload.router,
+        notifications_admin.router,
     ):
         app.include_router(router, prefix="/api/v1")
+    app.mount(media_upload.MEDIA_URL, StaticFiles(directory=media_upload.media_dir()), name="media")
     return app
 
 

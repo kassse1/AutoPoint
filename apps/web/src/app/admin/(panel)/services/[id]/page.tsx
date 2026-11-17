@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Btn, Card, cleanI18n, ErrorBox, Field, I18nInputs, inputCls, Loading, Notice, PageHeader } from "@/components/admin/ui";
 import { api, type AdminCategory, type AdminOption, type AdminService, type PriceMatrix, type Vehicle } from "@/lib/admin/api";
 import { useAuth } from "@/lib/admin/auth";
@@ -88,9 +89,7 @@ function ContentForm({ service, categories, canWrite }: { service: AdminService;
         {listArea("benefits", t("benefits"), t("linesHint"), benefits, setBenefits)}
         {listArea("process", t("process"), t("stepsHint"), process, setProcess)}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("image")} htmlFor="image" hint={t("imageHint")}>
-            <input id="image" value={s.image_url ?? ""} onChange={(e) => setS({ ...s, image_url: e.target.value })} className={inputCls} />
-          </Field>
+          <ImageUpload label={t("image")} value={s.image_url} disabled={!canWrite} onChange={(url) => setS({ ...s, image_url: url })} />
           <Field label={t("priceDisplay")} htmlFor="display">
             <select id="display" value={s.price_display} onChange={(e) => setS({ ...s, price_display: e.target.value as "from" })} className={inputCls}>
               <option value="from">{t("displayFrom")}</option>

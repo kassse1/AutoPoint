@@ -631,3 +631,8 @@ Not pushed to GitHub; no `git add .`/`-A`; explicit file lists per commit, each 
 | 5 | Access token refresh from any tab | Web Locks API serializes refreshes across tabs | Rotated refresh tokens are never sent twice (Phase 4 two-tab issue) |
 | 5 | Week calendar view | Day view (columns per master) + table with date filters | Covers dispatch; a week grid adds little for 2–5 masters |
 | 5 | Demo credentials in Phase 8 | Dev-only demo accounts in the seed now, refused in production (tested) | The admin can't be demonstrated without them |
+| 6 | httpx for the Telegram client | Standard-library `urllib` | One POST per message; no extra dependency |
+| 6 | Cloudflare Turnstile as a later option for spam | Honeypot + signed timing token + per-IP rate limit, no CAPTCHA | No third-party script or tracking; add Turnstile if real spam gets through |
+| 6 | Deleting gallery items removes files | Files stay on disk (`shortcut:` comment in code) | Never breaks a cached page; add an orphan sweep if storage grows |
+| 6 | Real Telegram delivery verified | **Not verified with a real bot**: no token was provided. The HTTP layer is tested with a mocked Telegram API (success, 429 retry_after, 4xx, 5xx, network errors) | Set the two env vars and use «Отправить тестовое» to verify |
+| 6 | Optional translated fields | `I18nInputs` makes Russian required only for required texts | A required-everywhere version silently blocked saving optional captions/bios (found in browser testing) |

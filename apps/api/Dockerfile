@@ -14,7 +14,7 @@ COPY alembic.ini ./
 COPY migrations ./migrations
 COPY app ./app
 
-RUN useradd --system --uid 10001 app
+RUN useradd --system --uid 10001 app && mkdir -p /data/media && chown app /data/media
 USER app
 EXPOSE 8000
 # Migrations on start are fine with a single API container; revisit for multiple replicas.

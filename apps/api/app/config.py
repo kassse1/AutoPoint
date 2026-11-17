@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     # Signs booking manage links (and JWTs from Phase 4). Rotating it invalidates old links.
     secret_key: str = _DEV_SECRET
+    # Public address of the website, for links in staff notifications.
+    public_url: str = "http://localhost:3000"
+    # Telegram staff notifications. Unset = notifications wait in the outbox (shown in admin).
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+    # Uploaded images (served at /api/v1/media/…). A Docker volume in production.
+    media_root: str = "media"
 
     @property
     def expose_docs(self) -> bool:

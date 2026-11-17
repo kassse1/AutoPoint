@@ -38,7 +38,7 @@ describe("ICU messages", () => {
     business: "AutoPoint", year: 2026, city: "Астана", service: "PPF", price: "1 ₸",
     from: 2, to: 3, value: 1.5, title: "x", rating: 5, address: "a", email: "e",
     current: 1, total: 7, name: "n", when: "w", reference: "AP-123456",
-    page: 1, pages: 2, fields: "f", completed: 3, amount: "1 ₸", count: 2,
+    page: 1, pages: 2, fields: "f", completed: 3, amount: "1 ₸", count: 2, pending: 1, dead: 0, sent: 4,
     link: (chunks: unknown) => chunks,
   };
 

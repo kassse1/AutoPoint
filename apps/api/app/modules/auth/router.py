@@ -36,6 +36,7 @@ from app.modules.auth.security import (
     utcnow,
     verify_password,
 )
+from app.modules.notifications.models import notify
 from app.ratelimit import rate_limit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -157,6 +158,7 @@ def login(body: LoginIn, request: Request, response: Response, session: SessionD
             user.failed_logins += 1
             user.locked_until = lockout_until(user.failed_logins, now)
             if user.locked_until:
+                notify(session, "auth.locked", role=user.role)
                 record(
                     session,
                     action="auth.locked",
@@ -192,6 +194,7 @@ def refresh(request: Request, response: Response, session: SessionDep) -> TokenO
     if current.rotated_at is not None:
         # An old token came back: someone copied it. End this login everywhere.
         revoke_sessions(session, current.user_id, "reuse_detected", current.family_id)
+        notify(session, "auth.refresh_reuse")
         record(
             session,
             action="auth.refresh_reuse",

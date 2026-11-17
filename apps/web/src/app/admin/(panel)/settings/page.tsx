@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Btn, Card, cleanI18n, ErrorBox, Field, I18nInputs, inputCls, Loading, Notice, PageHeader } from "@/components/admin/ui";
 import { api, type SiteSettings } from "@/lib/admin/api";
 import { useAuth } from "@/lib/admin/auth";
@@ -70,7 +71,9 @@ export default function SettingsPage() {
                     <input aria-label={t("fields.accent_color")} value={s.accent_color ?? ""} onChange={(e) => set({ accent_color: e.target.value })} className={inputCls} />
                   </div>
                 </Field>
-                {text("logo_url")}
+              </div>
+              <div className="mt-4">
+                <ImageUpload label={t("fields.logo_url")} value={s.logo_url} disabled={!write} onChange={(url) => set({ logo_url: url })} />
               </div>
               <div className="mt-4 space-y-4">
                 <I18nInputs id="s-seo-title" label={t("fields.seo_title")} value={s.seo_title_i18n} onChange={(v) => set({ seo_title_i18n: v as SiteSettings["seo_title_i18n"] })} />

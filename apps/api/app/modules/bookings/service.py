@@ -25,15 +25,36 @@ from app.modules.audit.models import record
 from app.modules.auth.permissions import CurrentUser
 from app.modules.bookings.models import ACTIVE_STATUSES, Booking, BookingItem
 from app.modules.customers.models import Customer
+from app.modules.notifications.models import notify
 from app.modules.pricing.engine import Quote
 from app.modules.pricing.service import Selection, quote_selection
 from app.modules.scheduling.engine import employee_range
 from app.modules.scheduling.service import load_schedule, qualified_employees
-from app.modules.site.models import BookingPolicy
+from app.modules.site.models import BookingPolicy, get_site_settings
+from app.modules.staff.models import Employee
 
 _REFERENCE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # Crockford base32, no I/L/O/U
 _EXCLUSION_VIOLATION = "23P01"
 _UNIQUE_VIOLATION = "23505"
+
+
+def _event(session: Session, booking: Booking) -> dict:
+    """Notification payload: what staff need to act, and no customer personal data."""
+    from app.i18n import pick  # local: keeps this module's imports minimal
+    from app.modules.catalog.models import VehicleCategory
+
+    tz = ZoneInfo(get_site_settings(session).timezone)
+    vehicle = session.get(VehicleCategory, booking.vehicle_category_id)
+    employee = session.get(Employee, booking.employee_id)
+    return {
+        "booking_id": str(booking.id),
+        "reference": booking.reference,
+        "services": ", ".join(pick(i.name_i18n, "ru") for i in booking.items),
+        "vehicle": pick(vehicle.name_i18n, "ru") if vehicle else "",
+        "starts": booking.starts_at.astimezone(tz).strftime("%d.%m.%Y %H:%M"),
+        "employee": employee.display_name if employee else "",
+        "source": booking.source,
+    }
 
 
 def new_reference() -> str:
@@ -226,6 +247,7 @@ def create_booking(
                 "total_kzt": booking.total_kzt,
             },
         )
+        notify(session, "booking.created", **_event(session, booking))
         return booking, True
 
     raise AppError(409, "SLOT_UNAVAILABLE", "This time is no longer available")
@@ -263,6 +285,7 @@ def cancel_by_customer(
         before={"status": before},
         after={"status": "cancelled", "by": "customer"},
     )
+    notify(session, "booking.status", **_event(session, booking), status="cancelled", by="customer")
     return booking
 
 
@@ -334,6 +357,8 @@ def change_status(
         before=before,
         after=after,
     )
+    if new_status in ("confirmed", "cancelled", "no_show"):  # what the team should hear about
+        notify(session, "booking.status", **_event(session, booking), status=new_status, by="staff")
 
 
 def reschedule(
@@ -385,3 +410,6 @@ def reschedule(
         before=before,
         after={"starts_at": starts_at.isoformat(), "employee_id": target},
     )
+    tz = ZoneInfo(get_site_settings(session).timezone)
+    old = datetime.fromisoformat(before["starts_at"]).astimezone(tz).strftime("%d.%m.%Y %H:%M")
+    notify(session, "booking.rescheduled", **_event(session, booking), old=old)
