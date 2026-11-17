@@ -1,10 +1,7 @@
-"""Foundation tests. They need a real PostgreSQL at DATABASE_URL (compose `db` or CI service)."""
+"""Foundation tests (real PostgreSQL test database, see conftest.py)."""
 
 import json
 import logging
-import subprocess
-import sys
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,8 +12,7 @@ from app.config import get_settings
 from app.db import get_session
 from app.logs import JsonFormatter
 from app.main import create_app
-
-API_DIR = Path(__file__).resolve().parents[1]
+from tests.conftest import run_alembic
 
 
 @pytest.fixture
@@ -107,11 +103,6 @@ def test_json_log_drops_unknown_extra_fields() -> None:
 
 
 def test_migrations_upgrade_and_downgrade() -> None:
-    def alembic(*args: str) -> None:
-        subprocess.run(  # noqa: S603 - fixed argv, no shell
-            [sys.executable, "-m", "alembic", *args], cwd=API_DIR, check=True
-        )
-
     engine = create_engine(get_settings().database_url)
 
     def extensions() -> set[str]:
@@ -119,9 +110,9 @@ def test_migrations_upgrade_and_downgrade() -> None:
             return set(conn.execute(text("SELECT extname FROM pg_extension")).scalars())
 
     try:
-        alembic("downgrade", "base")
+        run_alembic("downgrade", "base")
         assert not {"btree_gist", "citext"} & extensions()
-        alembic("upgrade", "head")
+        run_alembic("upgrade", "head")
         assert {"btree_gist", "citext"} <= extensions()
     finally:
         engine.dispose()

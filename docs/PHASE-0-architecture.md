@@ -599,3 +599,19 @@ Not pushed to GitHub; no `git add .`/`-A`; explicit file lists per commit, each 
 4. **Bookable resource:** employee only (recommended, matches spec) or employee + bay capacity?
 5. **Images:** I download free-licence stock (each download listed for your approval, credits recorded), or you supply photos?
 6. **Admin UI languages:** ru + en + kk message files (default), or ru only for admin to save time?
+
+---
+
+## 13. Changes made during implementation
+
+| Phase | Planned | Done instead | Why |
+|---|---|---|---|
+| 1 | SQLAlchemy async | Sync SQLAlchemy + psycopg 3 | psycopg async can't use Windows' default event loop; sync code is simpler to write and test; one studio's traffic is far below the threadpool limit |
+| 1 | Worker stub in compose | Worker added in Phase 6 | No work for it until notifications exist |
+| 2 | Next.js Cache Components + Partial Prefetching (scaffold defaults) | Disabled; classic on-demand ISR (`generateStaticParams` → `[]`, API fetch revalidated every 60 s) | Cache Components prerenders API data at build time, so images and CI builds would need a running API |
+| 2 | Inter Tight (display) + Inter (text) | Inter only | Lighthouse mobile: 7 font files delayed the text LCP; one variable family (3 files) raised performance from 82–92 to 92–96 |
+| 2 | Framer Motion section reveals | CSS scroll-driven animation (`.reveal`); Framer Motion deferred to the Phase 3 wizard | Zero JS, no `opacity: 0` in server HTML, degrades to static content |
+| 2 | `image_key` columns | `image_url` (site-relative path or URL) | No storage abstraction needed yet; uploads in Phase 6 produce `/media/…` URLs |
+| 2 | Gallery categories table | Gallery items reference `service_categories` | Same categories as services; one table less |
+| 2 | Lightbox | Not built | No real photos yet; revisit when photos exist |
+| 2 | Contact form on Contacts page | Phase 6 (with its backend, spam protection and notifications) | Not shipping a form that doesn't send anything |

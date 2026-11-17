@@ -39,3 +39,6 @@ def setup_logging(level: str) -> None:
         logging.getLogger(name).handlers.clear()
         logging.getLogger(name).propagate = True
     logging.getLogger("uvicorn.access").disabled = True
+    # HTTP clients log full URLs at INFO; outbound URLs can carry secrets (Telegram bot token).
+    for name in ("httpx", "httpx2", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)

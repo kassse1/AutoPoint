@@ -24,8 +24,10 @@ services:
       ENVIRONMENT: development
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-autopoint}:${POSTGRES_PASSWORD:-autopoint}@db:5432/${POSTGRES_DB:-autopoint}
       CORS_ORIGINS: '["http://localhost:3000"]'
+    # Dev stack only: apply migrations and load demo content (skipped if already configured).
+    command: ["sh", "-c", "alembic upgrade head && python -m app.seed && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -37,6 +39,9 @@ services:
 
   web:
     build: apps/web
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
     ports:
       - "3000:3000"
     depends_on:

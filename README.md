@@ -4,23 +4,24 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 1 — Foundation.** Only infrastructure exists: API skeleton with health
-> checks, database migrations, a localized placeholder page and CI. No business features yet.
+> **Status: Phase 2 — Public website.** Public pages in ru / kk / en are served from the API
+> with demo content. Online booking (Phase 3) and the admin panel (Phases 4–5) are not built
+> yet; `/booking` is a placeholder with phone / WhatsApp / Telegram links.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
 
 | Part | Tech |
 |---|---|
-| Web (`apps/web`) | Next.js 16 (App Router, Cache Components), React 19, TypeScript strict, Tailwind CSS 4, next-intl (ru / kk / en) |
+| Web (`apps/web`) | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl, lucide-react |
 | API (`apps/api`) | Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, psycopg 3 |
 | Database | PostgreSQL 18 |
-| Tooling | uv, npm, Ruff, pytest, ESLint, Vitest, Docker Compose, GitHub Actions |
+| Tooling | uv, npm, Ruff, pytest, ESLint, Vitest, openapi-typescript, Docker Compose, GitHub Actions |
 
 ## Repository layout
 
 ```
-apps/api      FastAPI app (app/), migrations (migrations/), tests (tests/)
+apps/api      FastAPI app (app/), migrations (migrations/), tests (tests/), openapi.json
 apps/web      Next.js app (src/app/[locale]/…), translations (messages/)
 docs/         architecture and decisions
 compose.yml   local stack: db, api, web
@@ -36,11 +37,12 @@ docker compose up -d --build --wait
 ```
 
 - Website: http://localhost:3000 (ru), http://localhost:3000/kk, http://localhost:3000/en
-- API health: http://localhost:8000/health and http://localhost:8000/health/ready
+- API health: http://localhost:8000/health/ready
 - API docs (non-production only): http://localhost:8000/api/docs
 
-The API container applies migrations on start. Copy `.env.example` to `.env` to change
-database credentials or ports.
+The dev stack applies migrations and loads the **demo seed** on start (skipped if the
+database is already configured). If port 8000 is taken on your machine, set `API_PORT` in
+`.env` (copy `.env.example`).
 
 ## Local development (without containers for api/web)
 
@@ -55,35 +57,54 @@ API (from `apps/api`):
 ```bash
 uv sync
 uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+uv run python -m app.seed
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
-Web (from `apps/web`):
+Web (from `apps/web`; point it at the API if it isn't on port 8000):
 
 ```bash
 npm install
-npm run dev
+API_INTERNAL_URL=http://localhost:8000 npm run dev
 ```
 
 ## Checks
 
-API (from `apps/api`, needs the `db` container running — tests use a real PostgreSQL):
+API (from `apps/api`, needs the `db` container — tests create and use a separate
+`<db>_test` database, so dev data is never touched):
 
 ```bash
 uv run ruff check . && uv run ruff format --check . && uv run pytest
 ```
 
-Web (from `apps/web`):
+Web (from `apps/web`; the build does **not** need a running API):
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same commands plus `docker compose build`.
+After changing API schemas, regenerate the contract and the TS types (CI fails if they drift):
+
+```bash
+cd apps/api && uv run python -m app.openapi && cd ../web && npm run api:types
+```
+
+## How the website gets its data
+
+- Pages are server-rendered from the API (`src/lib/api/client.ts`, server-side only) and
+  cached for 60 s. Nothing is built ahead of time, so a deploy never depends on the API
+  being up during the build.
+- Business data (name, contacts, address, map links, hours, SEO title, brand colour, enabled
+  languages) lives in the `business_settings` table and is validated by `SiteSettings`.
+- Services, prices (integer KZT per vehicle class), options, gallery, reviews and team come
+  from their tables. Translatable DB fields are JSON objects `{"ru", "kk", "en"}`; `ru` is
+  required and is the fallback.
+- Interface and marketing copy lives in `apps/web/messages/{ru,kk,en}.json`. Keys are
+  type-checked: a missing or misspelled key fails `npm run typecheck`.
 
 ## Configuration
 
-API settings come from environment variables only (`apps/api/app/config.py`):
+API (`apps/api/app/config.py`, environment variables only):
 
 | Variable | Default | Notes |
 |---|---|---|
@@ -92,13 +113,35 @@ API settings come from environment variables only (`apps/api/app/config.py`):
 | `CORS_ORIGINS` | `[]` | JSON list; empty in production (same origin behind the proxy) |
 | `LOG_LEVEL` | `INFO` | logs are JSON lines with `request_id` |
 
-## API conventions (so far)
+Web:
 
-- Every error is `application/problem+json`: `{type, title, status, code, detail, request_id, errors[]}`.
-- Every response carries `X-Request-ID` (a safe incoming value is reused, otherwise generated).
-- Access logs record method, path (never the query string), status and duration.
+| Variable | Default | Notes |
+|---|---|---|
+| `API_INTERNAL_URL` | `http://localhost:8000` | where the Next.js server reaches the API |
+| `SITE_URL` | `http://localhost:3000` | canonical URLs, sitemap, Open Graph |
+
+## Public API (v1)
+
+`GET /api/v1/public/…` — `site`, `service-categories`, `vehicle-categories`, `services`
+(`?category=&featured=`), `services/{slug}`, `gallery` (`?category=&service=&kind=`),
+`reviews`, `team`. Content endpoints take `?locale=ru|kk|en`.
+
+Every error is `application/problem+json`: `{type, title, status, code, detail, request_id, errors[]}`;
+every response carries `X-Request-ID`.
+
+## Demo content — what is not real
+
+The seed (`apps/api/app/seed.py`) is a **demo**. The site labels it as such:
+
+- Contacts and address are placeholders (`+7 700 000 00 00`, `hello@example.com`, “Demo address”).
+- Prices and durations are examples.
+- Reviews and team profiles are flagged `is_demo` and show a “Demo” badge. No rating
+  markup (JSON-LD) is ever produced from them.
+- There are no photos yet: images render as a labelled line-art illustration until real
+  photos are uploaded (upload arrives with the admin panel).
+- The privacy policy is a template and must be reviewed by a lawyer.
+- Kazakh (`kk`) texts are drafts and need review by a native speaker.
 
 ## Notes
 
-- Kazakh (`kk`) texts are drafts and need review by a native speaker.
-- The business timezone is `Asia/Almaty` (UTC+5 since 2024); the API pins the `tzdata` package.
+- Business timezone is `Asia/Almaty` (UTC+5 since 2024); the API pins the `tzdata` package.

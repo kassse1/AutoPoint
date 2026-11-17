@@ -3,8 +3,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components is off on purpose: it prerenders API data at build time, so images
+  // could not be built without a running API. Pages use on-demand ISR instead (see layout).
   turbopack: {
     rules: {
       "*.css": {

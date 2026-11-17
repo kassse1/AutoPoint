@@ -1,12 +1,241 @@
 {
-  "Meta": {
-    "title": "AutoPoint — detailing studio in Astana",
-    "description": "Premium car detailing in Astana: paint correction, ceramic coating, protective film, interior cleaning."
+  "Nav": {
+    "home": "Home",
+    "services": "Services",
+    "gallery": "Our work",
+    "about": "About",
+    "contacts": "Contacts",
+    "book": "Book now",
+    "main": "Main navigation",
+    "language": "Site language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skip": "Skip to content"
+  },
+  "Footer": {
+    "tagline": "Detailing studio: paint correction, protective coatings and interior care.",
+    "navigation": "Navigation",
+    "privacy": "Privacy policy",
+    "contacts": "Contacts",
+    "hours": "Opening hours",
+    "copyright": "© {year} {business}",
+    "demoNotice": "Demo website: contacts, prices, reviews and team are examples, not data of a real company."
+  },
+  "Common": {
+    "book": "Book now",
+    "call": "Call",
+    "whatsappText": "Hello! I'd like to book an appointment at {business}.",
+    "whatsappServiceText": "Hello! I'm interested in “{service}”.",
+    "illustration": "Demo illustration",
+    "closed": "Closed",
+    "priceOnRequest": "Price on request",
+    "priceFrom": "from {price}",
+    "durationHours": "{from, number}–{to, number} h",
+    "durationHoursSingle": "{value, number} h",
+    "durationDays": "{from}–{to} working days",
+    "durationDaysSingle": "{value, plural, one {# working day} other {# working days}}",
+    "before": "Before",
+    "after": "After",
+    "compare": "Before and after comparison: {title}",
+    "demo": "Demo",
+    "demoReview": "Demo review",
+    "demoProfile": "Demo profile",
+    "rating": "Rated {rating} out of 5",
+    "allServices": "All services",
+    "priceNote": "Prices are indicative. We confirm the exact price after inspecting the car, before any work starts.",
+    "mapLoad": "Show map",
+    "mapNotice": "The map is loaded from openstreetmap.org only after you click."
+  },
+  "Cta": {
+    "title": "Let's find the right care for your car",
+    "lead": "Book a convenient time or ask a question — we'll reply and give you a price estimate.",
+    "book": "Book now",
+    "contacts": "Contacts"
   },
   "Home": {
-    "eyebrow": "Detailing studio · Astana",
-    "title": "Flawless care for your car",
-    "lead": "Paint correction, ceramic coating, protective film and interior detailing.",
-    "status": "Website under construction."
+    "hero": {
+      "eyebrow": "Detailing studio · {city}",
+      "title": "Your car, at its very best",
+      "lead": "Paint correction, ceramic coating, protective film and interior detailing. Transparent pricing before any work begins.",
+      "primary": "Book now",
+      "secondary": "Explore services",
+      "imageAlt": "A car in the studio after detailing",
+      "points": {
+        "1": "A quote before we start — no surprises at the end",
+        "2": "Appointment-only, no queues",
+        "3": "Before and after photos for every car"
+      }
+    },
+    "featured": {
+      "eyebrow": "Services",
+      "title": "What we do",
+      "lead": "The price depends on vehicle size and options — see exact prices on each service page."
+    },
+    "results": {
+      "eyebrow": "Before & after",
+      "title": "Results you can see",
+      "lead": "Drag the slider to compare the condition before and after.",
+      "cta": "All work"
+    },
+    "why": {
+      "eyebrow": "Why us",
+      "title": "An approach you can trust with your car",
+      "items": {
+        "1": { "title": "Honest quotes", "text": "We price after inspection and never change it without your consent." },
+        "2": { "title": "Diagnostics first", "text": "We measure paint thickness and show which defects can be fixed." },
+        "3": { "title": "Studio lighting", "text": "We check the result under several light sources, not outside." },
+        "4": { "title": "On-time delivery", "text": "We agree the timing up front and keep you posted." }
+      }
+    },
+    "process": {
+      "eyebrow": "How we work",
+      "title": "Four steps from request to handover",
+      "lead": "A clear process with no hidden stages.",
+      "steps": {
+        "1": { "title": "Request", "text": "Choose a service and time online or message us." },
+        "2": { "title": "Inspection & quote", "text": "We assess the car and agree the price." },
+        "3": { "title": "Work", "text": "We do the work in the studio with checks at every stage." },
+        "4": { "title": "Handover", "text": "We show you the result and explain aftercare." }
+      }
+    },
+    "reviews": {
+      "eyebrow": "Reviews",
+      "title": "What clients say"
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions",
+      "items": {
+        "1": { "q": "Why do prices start “from”?", "a": "The price depends on vehicle size, paint condition and options. We confirm the exact price after inspection, before any work begins." },
+        "2": { "q": "How long does ceramic coating take?", "a": "Usually one to two working days including preparation and polishing. The exact time depends on the number of layers." },
+        "3": { "q": "Does the car need polishing before coating or film?", "a": "Yes — a coating locks in the current state of the paint, so we remove defects first." },
+        "4": { "q": "Can I leave the car for several days?", "a": "Yes. For long jobs such as film installation, the car stays in the studio for the whole job." },
+        "5": { "q": "How do I care for the car after coating?", "a": "At handover we explain which washes to use and when the first wash is safe." },
+        "6": { "q": "How do I book?", "a": "Online, by phone, or via WhatsApp and Telegram. We'll find a convenient time." }
+      }
+    },
+    "location": {
+      "eyebrow": "Studio",
+      "title": "Address and opening hours",
+      "mapTitle": "Map: {business}"
+    }
+  },
+  "Services": {
+    "metaTitle": "Services and prices",
+    "metaDescription": "Paint correction, ceramic coating, PPF, interior cleaning and detailing, window tinting. Prices by vehicle class.",
+    "eyebrow": "Services & prices",
+    "title": "Car care from paint to interior",
+    "lead": "Choose a service to see what's included, how long it takes and what it costs for your car.",
+    "categoriesNav": "Service categories",
+    "vehicles": {
+      "title": "How pricing works",
+      "lead": "The price depends on vehicle class: larger body and cabin areas need more materials and time."
+    }
+  },
+  "Service": {
+    "breadcrumbs": "Breadcrumbs",
+    "price": "Price",
+    "duration": "Duration",
+    "book": "Book this service",
+    "ask": "Ask a question",
+    "about": "About the service",
+    "benefits": "What you get",
+    "includes": "What's included",
+    "process": "How it's done",
+    "prices": {
+      "title": "Prices by vehicle class",
+      "lead": "Options are added to the base price. Options in one group, such as number of layers, are mutually exclusive.",
+      "caption": "Prices for “{service}” by vehicle class",
+      "item": "Service / option",
+      "base": "Base price",
+      "included": "included"
+    },
+    "gallery": "Examples of our work",
+    "related": "Related services"
+  },
+  "Gallery": {
+    "metaTitle": "Our work",
+    "metaDescription": "Before and after photos: paint correction, ceramic coating, protective film, interior cleaning.",
+    "eyebrow": "Our work",
+    "title": "Before and after",
+    "lead": "Examples by service area. Drag the slider to compare.",
+    "empty": "Photos of our work are coming soon.",
+    "all": "All",
+    "filter": "Filter by service area"
+  },
+  "About": {
+    "metaTitle": "About the studio",
+    "metaDescription": "How we work, our standards and our team.",
+    "eyebrow": "About",
+    "title": "{business} — detailing without compromise",
+    "lead": "We take on fewer cars and finish every one to a standard that holds up under studio lights.",
+    "imageAlt": "The studio work area",
+    "story": {
+      "p1": "The studio was built for owners who care not only about a clean car but about preserving its paint. We work by appointment so every car gets the time it needs.",
+      "p2": "Every job starts with an inspection. We explain what can be corrected and give you the price up front."
+    },
+    "standards": {
+      "eyebrow": "Standards",
+      "title": "The rules we work by",
+      "items": {
+        "1": { "title": "Inspection before work", "text": "We record the car's condition and agree the scope." },
+        "2": { "title": "Safe washing", "text": "Two-phase wash and clean tools for every car." },
+        "3": { "title": "Checked under studio light", "text": "Every panel is inspected before handover." },
+        "4": { "title": "Aftercare advice", "text": "We explain how to keep the result for as long as possible." }
+      }
+    },
+    "team": {
+      "eyebrow": "Team",
+      "title": "Who looks after your car"
+    },
+    "studio": "The studio"
+  },
+  "Contacts": {
+    "metaTitle": "Contacts",
+    "metaDescription": "Address, opening hours, phone, WhatsApp and Telegram. {address}",
+    "eyebrow": "Contacts",
+    "title": "Get in touch",
+    "lead": "Call, message us, or visit the studio by appointment.",
+    "demoNotice": "This is a demo website: the phone number, address and messengers are examples.",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "hours": "Opening hours",
+    "mapTitle": "Map: {business}",
+    "mapProviders": {
+      "2gis": "Open in 2GIS",
+      "yandex": "Open in Yandex Maps",
+      "google": "Open in Google Maps"
+    }
+  },
+  "Booking": {
+    "metaTitle": "Booking",
+    "eyebrow": "Booking",
+    "title": "Book a convenient time",
+    "lead": "Online booking is coming soon. Meanwhile, call or message us — we'll find a time and give you a price estimate."
+  },
+  "Privacy": {
+    "title": "Privacy policy",
+    "lead": "How we process the personal data of website visitors and clients.",
+    "templateNotice": "This is a template for a demo website. A lawyer must review it before launch.",
+    "sections": {
+      "1": { "title": "Who processes your data", "text": "The data controller is {business}. For questions about your data, contact: {email}." },
+      "2": { "title": "What we collect", "text": "Your name, phone number, optionally an email address, vehicle make and model, and a booking comment." },
+      "3": { "title": "Why", "text": "To book your service, contact you to confirm it and answer your request. We don't send marketing without separate consent." },
+      "4": { "title": "Legal basis", "text": "Processing is based on your consent under the Law of the Republic of Kazakhstan “On Personal Data and Their Protection”." },
+      "5": { "title": "Storage and sharing", "text": "Data is kept for as long as needed to provide services and meet legal requirements, and is not shared with third parties except where required by law." },
+      "6": { "title": "Your rights", "text": "You can request access to, correction or deletion of your data, or withdraw consent, by writing to: {email}." }
+    }
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "lead": "The link may be outdated or the address mistyped.",
+    "home": "Go home",
+    "services": "Services"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "lead": "We couldn't load this page. Please try again in a minute.",
+    "retry": "Try again"
   }
 }

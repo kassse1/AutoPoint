@@ -37,6 +37,8 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run alembic upgrade head
       - run: uv run pytest
+      - name: OpenAPI schema is up to date
+        run: uv run python -m app.openapi && git diff --exit-code openapi.json
 
   web:
     runs-on: ubuntu-latest
@@ -51,6 +53,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
+      - name: API types match the OpenAPI schema
+        run: npm run api:types && git diff --exit-code src/lib/api/schema.d.ts
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test

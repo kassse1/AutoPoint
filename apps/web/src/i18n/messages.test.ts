@@ -1,8 +1,9 @@
+import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
 import en from "../../messages/en.json";
 import kk from "../../messages/kk.json";
 import ru from "../../messages/ru.json";
-import { routing } from "./routing";
+import { routing, type Locale } from "./routing";
 
 type Messages = { [key: string]: string | Messages };
 
@@ -27,5 +28,32 @@ describe("translation catalogs", () => {
   it.each(Object.keys(catalogs))("%s has no empty strings", (locale) => {
     const empty = Object.entries(flatten(catalogs[locale])).filter(([, v]) => !v.trim());
     expect(empty).toEqual([]);
+  });
+});
+
+describe("ICU messages", () => {
+  const sample = {
+    business: "AutoPoint", year: 2026, city: "Астана", service: "PPF", price: "1 ₸",
+    from: 2, to: 3, value: 1.5, title: "x", rating: 5, address: "a", email: "e",
+  };
+
+  it.each(Object.keys(catalogs))("every %s message compiles and formats", (locale) => {
+    const errors: string[] = [];
+    const t = createTranslator({
+      locale: locale as Locale,
+      messages: catalogs[locale] as never,
+      onError: (e) => errors.push(e.message),
+    }) as unknown as (key: string, values: object) => string;
+    for (const key of Object.keys(flatten(catalogs[locale]))) t(key, sample);
+    expect(errors).toEqual([]);
+  });
+
+  it("uses correct Russian plural forms for working days", () => {
+    const t = createTranslator({ locale: "ru", messages: ru, namespace: "Common" });
+    expect(t("durationDaysSingle", { value: 1 })).toBe("1 рабочий день");
+    expect(t("durationDaysSingle", { value: 3 })).toBe("3 рабочих дня");
+    expect(t("durationDaysSingle", { value: 5 })).toBe("5 рабочих дней");
+    expect(t("durationDays", { from: 3, to: 5 })).toBe("3–5 рабочих дней");
+    expect(t("durationHours", { from: 3.5, to: 5.5 })).toBe("3,5–5,5 ч");
   });
 });
