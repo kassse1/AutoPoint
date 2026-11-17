@@ -626,3 +626,8 @@ Not pushed to GitHub; no `git add .`/`-A`; explicit file lists per commit, each 
 | 4 | Audit log append-only via DB grants | Phase 8 (needs a separate DB role in the production setup) | The app writes audit rows in the same transaction as each change; no endpoint edits or deletes them |
 | 4 | Admin API on the same Next.js `/api` proxy | Proxy now forwards `Authorization`, `X-Requested-With`, cookies and `Set-Cookie` | The admin app can log in through the website origin; verified end-to-end on Docker |
 | 4 | Refresh in two tabs at once | Treated as token reuse: that login ends and the user logs in again | Simplest correct rotation; the Phase 5 admin app will refresh from one place only |
+| 5 | Admin UI in ru + kk + en | Russian only for now; texts in `messages/ru.json` → `Admin` (excluded from the parity test) | Staff work in Russian; translating ~400 admin strings can follow without code changes |
+| 5 | TanStack Query + TanStack Table | TanStack Query only; plain HTML tables with server-side filters/pagination | Tables are simple; no client-side sorting/grouping needed |
+| 5 | Access token refresh from any tab | Web Locks API serializes refreshes across tabs | Rotated refresh tokens are never sent twice (Phase 4 two-tab issue) |
+| 5 | Week calendar view | Day view (columns per master) + table with date filters | Covers dispatch; a week grid adds little for 2–5 masters |
+| 5 | Demo credentials in Phase 8 | Dev-only demo accounts in the seed now, refused in production (tested) | The admin can't be demonstrated without them |

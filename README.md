@@ -4,18 +4,18 @@ Website, booking system and admin panel for a premium car detailing studio in As
 (demo brand). Built so it can be re-branded for other automotive businesses through
 configuration.
 
-> **Status: Phase 4 — Admin backend.** Public site (ru / kk / en), live price calculator,
-> 7-step online booking with database-level double-booking protection, and the complete
-> admin **API** (login, roles, bookings, customers, catalog, prices, staff, schedules,
-> settings, users, audit log). The admin **interface** is Phase 5; Telegram notifications and
-> image uploads are Phase 6.
+> **Status: Phase 5 — Admin panel.** Public site (ru / kk / en), live price calculator,
+> 7-step online booking with database-level double-booking protection, and the staff admin
+> at `/admin`: dashboard, bookings (table + day calendar), customers, services and price
+> matrix, discounts, staff and schedules, holidays, site settings, users, audit log.
+> Telegram notifications and image uploads are Phase 6.
 > Architecture and roadmap: [docs/PHASE-0-architecture.md](docs/PHASE-0-architecture.md).
 
 ## Stack
 
 | Part | Tech |
 |---|---|
-| Web (`apps/web`) | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl, React Hook Form + Zod, lucide-react |
+| Web (`apps/web`) | Next.js 16 (App Router), React 19, TypeScript strict, Tailwind CSS 4, next-intl, React Hook Form + Zod, TanStack Query (admin), lucide-react |
 | API (`apps/api`) | Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, psycopg 3 |
 | Database | PostgreSQL 18 |
 | Tooling | uv, npm, Ruff, pytest, ESLint, Vitest, openapi-typescript, Docker Compose, GitHub Actions |
@@ -24,7 +24,7 @@ configuration.
 
 ```
 apps/api      FastAPI app (app/), migrations (migrations/), tests (tests/), openapi.json
-apps/web      Next.js app (src/app/[locale]/…), translations (messages/)
+apps/web      Next.js: public site (src/app/[locale]/…), admin (src/app/admin/…), translations (messages/)
 docs/         architecture and decisions
 compose.yml   local stack: db, api, web
 .github/      CI workflow
@@ -106,7 +106,21 @@ cd apps/api && uv run python -m app.openapi && cd ../web && npm run api:types
 
 ## Admin access
 
-There are no default accounts. Create the first owner on a fresh install (the password is
+Admin panel: http://localhost:3000/admin (Russian; all texts are in `messages/ru.json` →
+`Admin`, ready to translate).
+
+**Demo accounts (development only).** `python -m app.seed` (run automatically by the dev
+Docker stack) creates these when there are no users yet. Their password is public, so they
+are **never** created with `ENVIRONMENT=production`:
+
+| Email | Role | Password |
+|---|---|---|
+| owner@autopoint.demo | owner | `autopoint-demo-2026` |
+| admin@autopoint.demo | admin | `autopoint-demo-2026` |
+| manager@autopoint.demo | manager | `autopoint-demo-2026` |
+| erlan@autopoint.demo | employee (master «Ерлан С.») | `autopoint-demo-2026` |
+
+On a real install there are no default accounts. Create the first owner (the password is
 asked interactively, or read from `AUTOPOINT_PASSWORD`):
 
 ```bash

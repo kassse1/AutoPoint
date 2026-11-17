@@ -579,11 +579,49 @@ def seed_discounts(session: Session) -> bool:
     return True
 
 
+# Demo staff accounts for development and portfolio demos ONLY: the password is public
+# (it is in this file and the README). They are never created when ENVIRONMENT=production.
+DEMO_PASSWORD = "autopoint-demo-2026"  # noqa: S105 - documented demo credential
+DEMO_USERS = [
+    ("owner@autopoint.demo", "Демо Владелец", "owner"),
+    ("admin@autopoint.demo", "Демо Админ", "admin"),
+    ("manager@autopoint.demo", "Асель Н.", "manager"),
+    ("erlan@autopoint.demo", "Ерлан С.", "employee"),  # linked to the master «Ерлан С.»
+]
+
+
+def seed_demo_users(session: Session) -> bool:
+    from app.config import get_settings
+    from app.modules.auth.models import User
+    from app.modules.auth.security import hash_password
+
+    if get_settings().environment == "production":
+        logger.warning("Demo users skipped: ENVIRONMENT=production")
+        return False
+    if session.scalar(select(User.id).limit(1)) is not None:
+        return False
+    password_hash = hash_password(DEMO_PASSWORD)
+    users = {
+        email: User(email=email, full_name=name, role=role, password_hash=password_hash)
+        for email, name, role in DEMO_USERS
+    }
+    session.add_all(users.values())
+    session.flush()
+    erlan = session.scalar(select(Employee).where(Employee.display_name == "Ерлан С."))
+    if erlan is not None:
+        erlan.user_id = users["erlan@autopoint.demo"].id
+    session.flush()
+    return True
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
     with SessionLocal.begin() as session:
         created = seed(session)
+        users = seed_demo_users(session)
     logger.info("Demo data %s", "added" if created else "skipped: already present")
+    if users:
+        logger.info("Demo staff accounts created (password: see README, development only)")
 
 
 if __name__ == "__main__":

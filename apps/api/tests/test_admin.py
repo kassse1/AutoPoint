@@ -179,6 +179,7 @@ def test_customer_search_history_and_notes(api, auth, clock) -> None:
     assert patched.status_code == 200
     assert patched.json()["notes"].startswith("VIP")
     assert len(patched.json()["history"]) == 1
+    assert patched.json()["history"][0]["starts_at"] == "2026-11-24T10:00:00+05:00"  # business time
     assert api.get(f"{ADMIN}/customers", headers=auth["employee"]).status_code == 403
 
 
@@ -362,3 +363,48 @@ def test_audit_log_lists_admin_actions_for_owner_only(api, auth) -> None:
     assert entry["action"] == "business_hours.set" and entry["actor_name"] == "Owner"
     assert entry["after"]["hours"][0]["starts"] == "10:00:00"
     assert api.get(f"{ADMIN}/audit-logs", headers=auth["manager"]).status_code == 403
+
+
+# --- analytics ---------------------------------------------------------------------------------
+
+
+def test_dashboard_counts_and_recorded_revenue_only(api, auth, clock, seeded) -> None:
+    done = booking_id(seeded, new_booking(api, phone="+77001110001")["reference"])
+    new_booking(api, phone="+77001110002")  # stays pending: never counted as revenue
+    h = auth["manager"]
+    for status, extra in (
+        ("confirmed", {}),
+        ("in_progress", {}),
+        ("completed", {"final_amount_kzt": 170_000}),
+    ):
+        assert set_status(api, h, done, status, **extra).status_code == 200
+    data = api.get(
+        f"{ADMIN}/analytics", params={"date_from": MON, "date_to": TUE}, headers=h
+    ).json()
+    assert data["today"] == "2026-11-23"
+    assert data["bookings"] == 2 and data["completed"] == 1
+    assert data["revenue_kzt"] == 170_000  # the recorded amount, not the 180 000 price
+    assert data["pending_upcoming"] == 1
+    assert [d["date"] for d in data["days"]] == ["2026-11-23", "2026-11-24"]
+    assert data["days"][1] == {
+        "date": "2026-11-24",
+        "bookings": 2,
+        "completed": 1,
+        "revenue_kzt": 170_000,
+    }
+    assert api.get(f"{ADMIN}/analytics", headers=auth["employee"]).status_code == 403
+    too_long = api.get(
+        f"{ADMIN}/analytics", params={"date_from": "2025-01-01", "date_to": TUE}, headers=h
+    )
+    assert too_long.status_code == 422
+
+
+def test_demo_users_are_never_created_in_production(seeded, monkeypatch) -> None:
+    from app.config import Settings
+    from app.seed import seed_demo_users
+
+    monkeypatch.setattr(
+        "app.config.get_settings",
+        lambda: Settings(environment="production", secret_key="x" * 40),
+    )
+    assert seed_demo_users(seeded) is False

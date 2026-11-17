@@ -5,7 +5,8 @@ import { routing } from "./routing";
 
 // Reading the locale from root params (not request headers) keeps pages statically renderable.
 export default getRequestConfig(async () => {
-  const param = await rootLocale();
+  // /admin has no [locale] segment (it is Russian-only for now): fall back to the default.
+  const param = await rootLocale().catch(() => undefined);
   const locale = hasLocale(routing.locales, param) ? param : routing.defaultLocale;
   return {
     locale,

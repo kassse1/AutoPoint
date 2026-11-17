@@ -31,6 +31,7 @@ class Permission(StrEnum):
     SETTINGS_WRITE = "settings.write"
     USERS_MANAGE = "users.manage"
     AUDIT_READ = "audit.read"
+    ANALYTICS_READ = "analytics.read"  # dashboard figures incl. recorded revenue
 
 
 P = Permission
@@ -46,6 +47,7 @@ ROLE_PERMISSIONS: dict[str, frozenset[Permission]] = {
             P.CUSTOMERS_WRITE,
             P.SCHEDULES_WRITE,
             P.STAFF_READ,
+            P.ANALYTICS_READ,
         }
     ),
     "employee": frozenset({P.BOOKINGS_READ, P.BOOKINGS_WORK}),

@@ -14,6 +14,7 @@ from app.config import get_settings
 from app.db import get_session
 from app.errors import AppError, problem, register_error_handlers
 from app.logs import request_id_var, setup_logging
+from app.modules.analytics import admin as analytics_admin
 from app.modules.audit import admin as audit_admin
 from app.modules.auth import router as auth
 from app.modules.bookings import admin as bookings_admin
@@ -120,6 +121,7 @@ def create_app() -> FastAPI:
         staff_admin.router,
         site_admin.router,
         audit_admin.router,
+        analytics_admin.router,
     ):
         app.include_router(router, prefix="/api/v1")
     return app

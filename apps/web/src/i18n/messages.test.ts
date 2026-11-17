@@ -22,7 +22,9 @@ describe("translation catalogs", () => {
   });
 
   it.each(["kk", "en"])("%s has exactly the same keys as ru (default locale)", (locale) => {
-    expect(Object.keys(flatten(catalogs[locale])).sort()).toEqual(Object.keys(flatten(ru)).sort());
+    // The staff admin ("Admin") is Russian-only for now; every public text must exist in all three.
+    const publicKeys = (m: Messages) => Object.keys(flatten(m)).filter((k) => !k.startsWith("Admin.")).sort();
+    expect(publicKeys(catalogs[locale])).toEqual(publicKeys(ru));
   });
 
   it.each(Object.keys(catalogs))("%s has no empty strings", (locale) => {
@@ -36,6 +38,7 @@ describe("ICU messages", () => {
     business: "AutoPoint", year: 2026, city: "Астана", service: "PPF", price: "1 ₸",
     from: 2, to: 3, value: 1.5, title: "x", rating: 5, address: "a", email: "e",
     current: 1, total: 7, name: "n", when: "w", reference: "AP-123456",
+    page: 1, pages: 2, fields: "f", completed: 3, amount: "1 ₸", count: 2,
     link: (chunks: unknown) => chunks,
   };
 

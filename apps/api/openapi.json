@@ -3414,6 +3414,73 @@
           }
         }
       }
+    },
+    "/api/v1/admin/analytics": {
+      "get": {
+        "tags": [
+          "admin: analytics"
+        ],
+        "summary": "Summary",
+        "operationId": "summary_api_v1_admin_analytics_get",
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4795,6 +4862,35 @@
           "created_at"
         ],
         "title": "CustomerRow"
+      },
+      "Day": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "bookings": {
+            "type": "integer",
+            "title": "Bookings"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "revenue_kzt": {
+            "type": "integer",
+            "title": "Revenue Kzt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "bookings",
+          "completed",
+          "revenue_kzt"
+        ],
+        "title": "Day"
       },
       "DiscountOut": {
         "properties": {
@@ -7987,6 +8083,80 @@
           "text"
         ],
         "title": "Step"
+      },
+      "Summary": {
+        "properties": {
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "today_bookings": {
+            "type": "integer",
+            "title": "Today Bookings"
+          },
+          "pending_upcoming": {
+            "type": "integer",
+            "title": "Pending Upcoming"
+          },
+          "confirmed_upcoming": {
+            "type": "integer",
+            "title": "Confirmed Upcoming"
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Date From"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "title": "Date To"
+          },
+          "bookings": {
+            "type": "integer",
+            "title": "Bookings"
+          },
+          "completed": {
+            "type": "integer",
+            "title": "Completed"
+          },
+          "cancelled": {
+            "type": "integer",
+            "title": "Cancelled"
+          },
+          "no_show": {
+            "type": "integer",
+            "title": "No Show"
+          },
+          "revenue_kzt": {
+            "type": "integer",
+            "title": "Revenue Kzt"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "today",
+          "today_bookings",
+          "pending_upcoming",
+          "confirmed_upcoming",
+          "date_from",
+          "date_to",
+          "bookings",
+          "completed",
+          "cancelled",
+          "no_show",
+          "revenue_kzt",
+          "days"
+        ],
+        "title": "Summary"
       },
       "TeamMember": {
         "properties": {
