@@ -2865,6 +2865,8 @@ export interface components {
             accent_color: string;
             /** Logo Url */
             logo_url: string | null;
+            /** Hero Image Url */
+            hero_image_url: string | null;
             /** Enabled Locales */
             enabled_locales: ("ru" | "kk" | "en")[];
             /** Timezone */
@@ -2928,6 +2930,8 @@ export interface components {
             accent_color: string;
             /** Logo Url */
             logo_url?: string | null;
+            /** Hero Image Url */
+            hero_image_url?: string | null;
             /**
              * Enabled Locales
              * @default [

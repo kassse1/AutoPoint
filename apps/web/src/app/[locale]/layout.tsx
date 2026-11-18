@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Oswald } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -13,6 +13,8 @@ import "../globals.css";
 // One variable font family for text and headings (fewer files on mobile networks).
 // cyrillic-ext carries the Kazakh letters (ә ғ қ ң ө ұ ү һ і).
 const inter = Inter({ subsets: ["latin", "cyrillic", "cyrillic-ext"], variable: "--font-inter" });
+// Condensed caps for headlines only.
+const oswald = Oswald({ subsets: ["latin", "cyrillic", "cyrillic-ext"], weight: ["500", "600"], variable: "--font-oswald" });
 
 // No pages are built ahead of time: each is rendered on its first request and then cached
 // (revalidated every 60 s via the API fetch). Builds therefore don't need a running API.
@@ -42,7 +44,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html
       lang={locale}
-      className={`${inter.variable} antialiased`}
+      className={`${inter.variable} ${oswald.variable} antialiased`}
       // Brand colour comes from business settings, no rebuild needed to change it.
       style={{ "--color-accent": site.accent_color } as CSSProperties}
     >

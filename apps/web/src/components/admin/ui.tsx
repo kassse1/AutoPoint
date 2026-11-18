@@ -6,7 +6,7 @@ import { buttonClass, type ButtonVariant } from "@/components/ui/primitives";
 import { ApiError } from "@/lib/admin/api";
 
 export const inputCls =
-  "min-h-10 w-full border border-line bg-surface px-3 text-sm aria-invalid:border-danger disabled:opacity-50";
+  "min-h-10 w-full rounded-lg border border-line bg-surface-2 px-3 text-sm transition-colors focus:border-accent/60 aria-invalid:border-danger disabled:opacity-50";
 
 export function Btn({
   variant = "secondary",
@@ -29,7 +29,7 @@ export function Btn({
 export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <h1 className="font-display text-2xl font-semibold sm:text-3xl">{title}</h1>
+      <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>
   );
@@ -48,10 +48,10 @@ export function Card({
 }) {
   return (
     // min-w-0: inside a grid, wide tables must scroll within the card, not widen the page.
-    <section className={`min-w-0 border border-line bg-surface/40 p-5 ${className}`}>
+    <section className={`min-w-0 rounded-2xl border border-line bg-surface p-5 shadow-[0_20px_60px_-40px_#000] sm:p-6 ${className}`}>
       {(title || actions) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          {title && <h2 className="font-display text-lg font-semibold">{title}</h2>}
+          {title && <h2 className="font-display text-base font-semibold">{title}</h2>}
           {actions}
         </div>
       )}
@@ -111,7 +111,7 @@ export function ErrorBox({ error }: { error: unknown }) {
   const text = useErrorText();
   if (!error) return null;
   return (
-    <p role="alert" className="border border-danger/50 bg-danger/10 p-3 text-sm">
+    <p role="alert" className="rounded-lg border border-danger/50 bg-danger/10 p-3 text-sm">
       {text(error)}
     </p>
   );
@@ -139,18 +139,18 @@ export function Empty({ text }: { text: string }) {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "border-warning/60 text-warning",
-  confirmed: "border-accent/60 text-accent",
-  in_progress: "border-fg/60 text-fg",
-  completed: "border-success/60 text-success",
+  pending: "border-warning/40 bg-warning/10 text-warning",
+  confirmed: "border-accent/40 bg-accent/10 text-accent",
+  in_progress: "border-sky-400/40 bg-sky-400/10 text-sky-300",
+  completed: "border-success/40 bg-success/10 text-success",
   cancelled: "border-line text-fg-muted line-through",
-  no_show: "border-danger/60 text-danger",
+  no_show: "border-danger/40 bg-danger/10 text-danger",
 };
 
 export function StatusBadge({ status }: { status: string }) {
   const t = useTranslations("Admin.status");
   return (
-    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${STATUS_STYLE[status] ?? ""}`}>
+    <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${STATUS_STYLE[status] ?? ""}`}>
       {t(status as "pending")}
     </span>
   );
@@ -208,7 +208,7 @@ export function Dialog({
       ref={ref}
       onClose={onClose}
       aria-labelledby="dialog-title"
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] border border-line bg-bg p-6 text-fg backdrop:bg-black/70"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-line bg-surface p-6 text-fg shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm"
     >
       <h2 id="dialog-title" className="font-display text-lg font-semibold">
         {title}

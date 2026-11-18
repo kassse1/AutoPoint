@@ -19,7 +19,7 @@ export function BeforeAfter({
 }) {
   const [position, setPosition] = useState(50);
   return (
-    <div className="relative overflow-hidden rounded-md border border-line select-none">
+    <div className="relative overflow-hidden rounded-2xl border border-line select-none">
       <div>{after}</div>
       <div
         className="absolute inset-0"

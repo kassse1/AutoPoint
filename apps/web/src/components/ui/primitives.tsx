@@ -2,15 +2,15 @@ import type { ComponentProps, ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 
 const BUTTON = {
-  primary: "bg-accent text-accent-fg hover:bg-accent/85",
-  secondary: "border border-line text-fg hover:border-fg/50",
+  primary: "bg-accent text-accent-fg shadow-[0_10px_30px_-12px_var(--color-accent)] hover:brightness-110",
+  secondary: "border border-fg/20 bg-white/[0.02] text-fg backdrop-blur hover:border-fg/60",
   ghost: "text-fg hover:text-accent",
 } as const;
 
 export type ButtonVariant = keyof typeof BUTTON;
 
 export function buttonClass(variant: ButtonVariant = "primary", extra = "") {
-  return `inline-flex min-h-12 items-center justify-center gap-2 rounded-sm px-6 text-center text-sm font-semibold tracking-wide whitespace-nowrap transition-colors ${BUTTON[variant]} ${extra}`;
+  return `inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 text-center text-xs font-semibold tracking-[0.14em] whitespace-nowrap uppercase transition ${BUTTON[variant]} ${extra}`;
 }
 
 /** Internal, locale-aware link styled as a button. */
@@ -56,7 +56,7 @@ export function SectionHeader({
       <div className="max-w-2xl">
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <Heading
-          className={`mt-3 font-display font-semibold tracking-tight ${Heading === "h1" ? "text-4xl sm:text-5xl lg:text-6xl" : "text-3xl sm:text-4xl"}`}
+          className={`mt-3 font-headline leading-[1.05] font-medium tracking-[0.03em] uppercase ${Heading === "h1" ? "text-4xl sm:text-5xl lg:text-6xl" : "text-3xl sm:text-5xl"}`}
         >
           {title}
         </Heading>

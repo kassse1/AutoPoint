@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { CalendarDays, CheckCircle2, Hourglass, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { BarChart } from "@/components/admin/BarChart";
@@ -27,8 +28,8 @@ function TodayList() {
     <ul className="divide-y divide-line">
       {q.data.items.map((b) => (
         <li key={b.id}>
-          <Link href={`/admin/bookings/${b.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 hover:bg-surface">
-            <span className="w-14 font-semibold tabular-nums">{localTime(b.starts_at)}</span>
+          <Link href={`/admin/bookings/${b.id}`} className="-mx-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.04]">
+            <span className="rounded-lg bg-accent/10 px-2 py-1 text-sm font-semibold text-accent tabular-nums">{localTime(b.starts_at)}</span>
             <span className="flex-1">
               {b.services.join(", ")} · <span className="text-fg-muted">{b.customer_name}</span>
             </span>
@@ -60,18 +61,21 @@ export default function DashboardPage() {
           <ErrorBox error={q.error} />
         ) : (
           <>
-            <dl className="grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+            <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {(
                 [
-                  ["today", String(q.data.today_bookings)],
-                  ["pending", String(q.data.pending_upcoming)],
-                  ["confirmed", String(q.data.confirmed_upcoming)],
-                  ["revenue", formatKzt(q.data.revenue_kzt, "ru")],
+                  ["today", String(q.data.today_bookings), CalendarDays, "bg-sky-400/10 text-sky-300"],
+                  ["pending", String(q.data.pending_upcoming), Hourglass, "bg-warning/10 text-warning"],
+                  ["confirmed", String(q.data.confirmed_upcoming), CheckCircle2, "bg-success/10 text-success"],
+                  ["revenue", formatKzt(q.data.revenue_kzt, "ru"), Wallet, "bg-accent/10 text-accent"],
                 ] as const
-              ).map(([key, value]) => (
-                <div key={key} className="bg-bg p-5">
-                  <dt className="text-xs tracking-wide text-fg-muted uppercase">{t(`tiles.${key}`)}</dt>
-                  <dd className="mt-2 font-display text-3xl font-semibold tabular-nums">{value}</dd>
+              ).map(([key, value, Icon, tone]) => (
+                <div key={key} className="relative rounded-2xl border border-line bg-surface p-5">
+                  <span aria-hidden="true" className={`absolute top-5 right-5 grid size-10 place-items-center rounded-xl ${tone}`}>
+                    <Icon className="size-5" strokeWidth={1.75} />
+                  </span>
+                  <dt className="pr-12 text-xs tracking-wide text-fg-muted uppercase">{t(`tiles.${key}`)}</dt>
+                  <dd className="mt-3 font-display text-3xl font-semibold tabular-nums">{value}</dd>
                   {key === "revenue" && (
                     <dd className="mt-1 text-xs text-fg-muted">{t("revenueNote", { completed: q.data.completed })}</dd>
                   )}

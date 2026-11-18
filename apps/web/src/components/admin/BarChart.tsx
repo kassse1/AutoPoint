@@ -93,7 +93,7 @@ export function BarChart({
         {hover !== null && (
           <div
             role="status"
-            className="pointer-events-none absolute top-0 border border-line bg-bg px-3 py-2 text-xs shadow-lg"
+            className="pointer-events-none absolute top-0 rounded-lg border border-line bg-surface-2 px-3 py-2 text-xs shadow-lg"
             style={{ left: `clamp(0px, ${((PAD.left + hover * slot) / W) * 100}% - 3rem, calc(100% - 9rem))` }}
           >
             <p className="text-fg-muted">{data[hover].label}</p>

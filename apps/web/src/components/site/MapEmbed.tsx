@@ -24,7 +24,7 @@ export function MapEmbed({
   const d = 0.008;
   const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d}%2C${lat - d / 2}%2C${lng + d}%2C${lat + d / 2}&layer=mapnik&marker=${lat}%2C${lng}`;
   return (
-    <div className="relative aspect-[4/3] overflow-hidden border border-line bg-surface sm:aspect-[16/10]">
+    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface sm:aspect-[16/10]">
       {loaded ? (
         <iframe
           src={src}

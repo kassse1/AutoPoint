@@ -55,7 +55,8 @@
   "Home": {
     "hero": {
       "eyebrow": "Detailing studio · {city}",
-      "title": "Your car, at its very best",
+      "title": "Your car,",
+      "titleAccent": "at its very best",
       "lead": "Paint correction, ceramic coating, protective film and interior detailing. Transparent pricing before any work begins.",
       "primary": "Book now",
       "secondary": "Explore services",
@@ -78,8 +79,6 @@
       "cta": "All work"
     },
     "why": {
-      "eyebrow": "Why us",
-      "title": "An approach you can trust with your car",
       "items": {
         "1": {
           "title": "Honest quotes",

@@ -1,4 +1,4 @@
-import { MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, MessageCircle, Phone } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -21,7 +21,7 @@ async function navItems(): Promise<NavItem[]> {
 
 function Wordmark({ site }: { site: Site }) {
   return (
-    <Link href="/" className="font-display text-lg font-bold tracking-[0.14em] uppercase">
+    <Link href="/" className="font-headline text-xl font-semibold tracking-[0.24em] uppercase">
       {site.logo_url ? (
         // eslint-disable-next-line @next/next/no-img-element -- logo may be SVG from settings
         <img src={site.logo_url} alt={site.business_name} className="h-8 w-auto" />
@@ -37,8 +37,8 @@ export async function SiteHeader({ site }: { site: Site }) {
   const items = await navItems();
   const locales = site.enabled_locales as Locale[];
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur">
-      <div className="container-page flex h-16 items-center justify-between gap-6">
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-bg/75 backdrop-blur-xl">
+      <div className="container-page flex h-20 items-center justify-between gap-6">
         <Wordmark site={site} />
         <MainNav items={items} label={t("main")} />
         <div className="flex items-center gap-3 sm:gap-5">
@@ -52,8 +52,9 @@ export async function SiteHeader({ site }: { site: Site }) {
             {phoneDisplay(site.phone)}
           </a>
           <div className="hidden sm:block">
-            <ButtonLink href="/booking" className="min-h-10 px-5">
+            <ButtonLink href="/booking" variant="secondary" className="min-h-11 px-6">
               {t("book")}
+              <ArrowRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
             </ButtonLink>
           </div>
           <MobileMenu

@@ -48,14 +48,20 @@ export function Shell({ children }: { children: ReactNode }) {
   const active = (href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href));
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_1fr]">
+    <div className="min-h-dvh bg-[radial-gradient(ellipse_at_top_right,rgb(195_164_108/0.06),transparent_50%)] lg:grid lg:grid-cols-[16rem_1fr]">
       <a href="#admin-main" className="sr-only z-50 bg-accent px-4 py-2 text-accent-fg focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
         {t("skip")}
       </a>
-      <aside className="border-b border-line bg-surface/40 lg:sticky lg:top-0 lg:h-dvh lg:border-r lg:border-b-0">
+      <aside className="border-b border-line bg-surface lg:sticky lg:top-0 lg:h-dvh lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between gap-4 px-5 py-4 lg:block">
-          <Link href="/admin" className="font-display text-base font-bold tracking-[0.14em] uppercase">
-            AutoPoint <span className="text-accent">Admin</span>
+          <Link href="/admin" className="flex items-center gap-3">
+            <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-accent font-bold text-accent-fg shadow-[0_8px_24px_-8px_var(--color-accent)]">
+              A
+            </span>
+            <span className="leading-tight">
+              <span className="block text-sm font-bold tracking-[0.18em] uppercase">AutoPoint</span>
+              <span className="block text-[11px] tracking-[0.2em] text-accent uppercase">Admin</span>
+            </span>
           </Link>
           <button type="button" onClick={logout} className="inline-flex min-h-10 items-center gap-2 text-sm text-fg-muted hover:text-fg lg:hidden">
             <LogOut className="size-4" aria-hidden="true" />
@@ -69,9 +75,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 <Link
                   href={href}
                   aria-current={active(href) ? "page" : undefined}
-                  className="flex min-h-10 items-center gap-3 rounded-sm px-3 text-sm whitespace-nowrap text-fg-muted transition-colors hover:bg-surface hover:text-fg aria-[current=page]:bg-surface aria-[current=page]:text-fg"
+                  className="group relative flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm whitespace-nowrap text-fg-muted transition-colors hover:bg-white/[0.04] hover:text-fg aria-[current=page]:bg-accent/10 aria-[current=page]:text-fg"
                 >
-                  <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                  <Icon className="size-4 shrink-0 group-aria-[current=page]:text-accent" strokeWidth={1.75} aria-hidden="true" />
                   {t(`nav.${key}`)}
                 </Link>
               </li>
@@ -87,7 +93,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </aside>
-      <main id="admin-main" className="min-w-0 px-4 py-8 sm:px-8">
+      <main id="admin-main" className="min-w-0 px-4 py-8 sm:px-8 lg:px-10">
         {children}
       </main>
     </div>

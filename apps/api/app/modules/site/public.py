@@ -32,6 +32,7 @@ class SiteOut(BaseModel):
     seo_description: str
     accent_color: str
     logo_url: str | None
+    hero_image_url: str | None
     enabled_locales: list[Locale]
     timezone: str
     currency: str
@@ -59,6 +60,7 @@ def get_site(session: SessionDep, locale: LocaleQuery = DEFAULT_LOCALE) -> SiteO
         seo_description=pick(s.seo_description_i18n, locale),
         accent_color=s.accent_color,
         logo_url=s.logo_url,
+        hero_image_url=s.hero_image_url,
         enabled_locales=s.enabled_locales,
         timezone=s.timezone,
         currency=s.currency,

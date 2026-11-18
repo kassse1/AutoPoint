@@ -24,7 +24,7 @@ export default function SettingsPage() {
       address_i18n: cleanI18n(s.address_i18n), city_i18n: cleanI18n(s.city_i18n),
       seo_title_i18n: cleanI18n(s.seo_title_i18n), seo_description_i18n: cleanI18n(s.seo_description_i18n),
       whatsapp: s.whatsapp || null, telegram: s.telegram || null, email: s.email || null,
-      instagram_url: s.instagram_url || null, logo_url: s.logo_url || null } }),
+      instagram_url: s.instagram_url || null, logo_url: s.logo_url || null, hero_image_url: s.hero_image_url || null } }),
     onSuccess: (data) => { queryClient.setQueryData(["settings"], data); setDraft(null); },
   });
 
@@ -74,6 +74,9 @@ export default function SettingsPage() {
               </div>
               <div className="mt-4">
                 <ImageUpload label={t("fields.logo_url")} value={s.logo_url} disabled={!write} onChange={(url) => set({ logo_url: url })} />
+              </div>
+              <div className="mt-4">
+                <ImageUpload label={t("fields.hero_image_url")} value={s.hero_image_url} disabled={!write} onChange={(url) => set({ hero_image_url: url })} />
               </div>
               <div className="mt-4 space-y-4">
                 <I18nInputs id="s-seo-title" label={t("fields.seo_title")} value={s.seo_title_i18n} onChange={(v) => set({ seo_title_i18n: v as SiteSettings["seo_title_i18n"] })} />

@@ -9177,6 +9177,17 @@
             ],
             "title": "Logo Url"
           },
+          "hero_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hero Image Url"
+          },
           "enabled_locales": {
             "items": {
               "type": "string",
@@ -9223,6 +9234,7 @@
           "seo_description",
           "accent_color",
           "logo_url",
+          "hero_image_url",
           "enabled_locales",
           "timezone",
           "currency",
@@ -9390,6 +9402,17 @@
               }
             ],
             "title": "Logo Url"
+          },
+          "hero_image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hero Image Url"
           },
           "enabled_locales": {
             "items": {

@@ -66,6 +66,7 @@ class SiteSettings(BaseModel):
     seo_description_i18n: I18nText
     accent_color: str = Field(default="#C3A46C", pattern=r"^#[0-9A-Fa-f]{6}$")
     logo_url: str | None = None
+    hero_image_url: str | None = None  # home page hero photo; the illustration is shown without it
     enabled_locales: list[Locale] = Field(default=["ru", "kk", "en"], min_length=1)
     timezone: str = "Asia/Almaty"
     currency: Literal["KZT"] = "KZT"

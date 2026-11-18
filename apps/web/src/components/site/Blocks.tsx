@@ -19,7 +19,7 @@ export async function GalleryFigure({ item, sizes }: { item: GalleryItem; sizes?
           sliderLabel={t("compare", { title: item.alt })}
         />
       ) : (
-        <div className="overflow-hidden rounded-md border border-line">
+        <div className="overflow-hidden rounded-2xl border border-line">
           <Media src={item.image_url} alt={item.alt} variant="after" sizes={sizes} className="aspect-[16/10]" />
         </div>
       )}
@@ -35,7 +35,7 @@ export async function ReviewCard({ review }: { review: Review }) {
   const t = await getTranslations("Common");
   const format = await getFormatter();
   return (
-    <figure className="flex h-full flex-col border border-line bg-surface/40 p-6 sm:p-8">
+    <figure className="flex h-full flex-col rounded-2xl border border-line bg-surface/60 p-6 sm:p-8">
       <div className="flex items-center justify-between gap-4">
         {review.rating != null && (
           <p role="img" className="flex gap-1 text-accent" aria-label={t("rating", { rating: review.rating })}>
@@ -69,10 +69,11 @@ export async function ReviewCard({ review }: { review: Review }) {
 export async function CtaBand() {
   const t = await getTranslations("Cta");
   return (
-    <section className="border-t border-line">
-      <div className="container-page flex flex-col items-start gap-8 py-20 sm:py-24 lg:flex-row lg:items-end lg:justify-between">
+    <section className="py-16 sm:py-20">
+      <div className="container-page">
+       <div className="flex flex-col items-start gap-8 rounded-3xl border border-accent/20 bg-[radial-gradient(ellipse_at_top_left,rgb(195_164_108/0.14),transparent_60%),var(--color-surface)] p-8 sm:p-12 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">{t("title")}</h2>
+          <h2 className="font-headline text-3xl font-medium tracking-[0.03em] uppercase sm:text-5xl">{t("title")}</h2>
           <p className="mt-4 text-lg text-fg-muted">{t("lead")}</p>
         </div>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -81,6 +82,7 @@ export async function CtaBand() {
             {t("contacts")}
           </ButtonLink>
         </div>
+       </div>
       </div>
     </section>
   );

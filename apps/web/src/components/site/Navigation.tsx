@@ -18,7 +18,7 @@ export function MainNav({ items, label }: { items: NavItem[]; label: string }) {
   const pathname = usePathname();
   return (
     <nav aria-label={label} className="hidden lg:block">
-      <ul className="flex items-center gap-8 text-sm">
+      <ul className="flex items-center gap-9 text-xs font-medium tracking-[0.16em] uppercase">
         {items.map((item) => {
           const active = isActive(pathname, item.href);
           return (
@@ -26,7 +26,7 @@ export function MainNav({ items, label }: { items: NavItem[]; label: string }) {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`transition-colors ${active ? "text-fg" : "text-fg-muted hover:text-fg"}`}
+                className={`relative py-2 transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-accent after:transition-transform ${active ? "text-fg after:scale-x-100" : "text-fg-muted after:scale-x-0 hover:text-fg"}`}
               >
                 {item.label}
               </Link>
@@ -104,7 +104,7 @@ export function MobileMenu({
                   <Link
                     href={item.href}
                     aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                    className="block py-3 font-display text-3xl font-semibold aria-[current=page]:text-accent"
+                    className="block py-3 font-headline text-4xl font-medium tracking-[0.04em] uppercase aria-[current=page]:text-accent"
                   >
                     {item.label}
                   </Link>
