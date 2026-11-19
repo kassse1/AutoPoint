@@ -6,7 +6,7 @@ import { CtaBand, GalleryFigure, ReviewCard } from "@/components/site/Blocks";
 import { MapEmbed } from "@/components/site/MapEmbed";
 import { OpeningHoursList } from "@/components/site/OpeningHours";
 import { ServiceCardView } from "@/components/site/ServiceCard";
-import { DEMO_HERO } from "@/lib/demoPhotos";
+import { DEMO_HERO, unsplashImg } from "@/lib/demoPhotos";
 import { ButtonAnchor, ButtonLink, Section, SectionHeader } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/routing";
 import { api, type Site } from "@/lib/api/client";
@@ -83,14 +83,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(businessJsonLd(site, locale)) }} />
 
       <section className="relative overflow-hidden border-b border-line bg-bg">
-        <Image
-          src={site.hero_image_url ?? DEMO_HERO}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[50%_60%]"
-        />
+        {site.hero_image_url ? (
+          <Image src={site.hero_image_url} alt="" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- resized by Unsplash's CDN, see unsplashImg
+          <img
+            {...unsplashImg(DEMO_HERO)}
+            alt=""
+            sizes="100vw"
+            fetchPriority="high"
+            className="absolute inset-0 h-full w-full object-cover object-[50%_60%]"
+          />
+        )}
         {/* Darken top and bottom so the headline and the strip stay readable on any photo. */}
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(8_8_10/0.9),rgb(8_8_10/0.45)_40%,rgb(8_8_10/0.25)_60%,rgb(8_8_10/0.95))]" />
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(8_8_10/0.7))]" />

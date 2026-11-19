@@ -26,6 +26,15 @@ const POOL = [
   photo("1701846638400-83532a945f60"),
 ];
 
+/**
+ * <img> attributes for an Unsplash photo resized and converted (AVIF/WebP) by Unsplash's CDN.
+ * next/image would instead download the ~1.5 MB original and re-encode it on our small server.
+ */
+export function unsplashImg(src: string) {
+  const at = (w: number) => `${src}?w=${w}&q=70&auto=format&fit=crop`;
+  return { src: at(1080), srcSet: [480, 828, 1280, 1920].map((w) => `${at(w)} ${w}w`).join(", ") };
+}
+
 /** Same key → same photo, so a page doesn't reshuffle between renders. */
 export function demoPhoto(key: string): string {
   if (BY_SLUG[key]) return BY_SLUG[key];

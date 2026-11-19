@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { demoPhoto } from "@/lib/demoPhotos";
+import { demoPhoto, unsplashImg } from "@/lib/demoPhotos";
 
 /**
  * A real photo when there is one; otherwise a labelled demo stock photo. `before` gives the
@@ -35,13 +35,15 @@ export async function Media({
   const before = variant === "before";
   return (
     <div className={`relative overflow-hidden bg-surface ${className}`}>
-      <Image
-        src={demoPhoto(demo ?? alt)}
+      {/* eslint-disable-next-line @next/next/no-img-element -- resized by Unsplash's CDN, see unsplashImg */}
+      <img
+        {...unsplashImg(demoPhoto(demo ?? alt))}
         alt={`${alt} (${t("illustration")})`}
-        fill
         sizes={sizes}
-        priority={priority}
-        className={`object-cover ${before ? "brightness-[0.6] contrast-[0.8] blur-[0.6px] grayscale-[0.6] sepia-[0.35]" : ""}`}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
+        decoding="async"
+        className={`absolute inset-0 h-full w-full object-cover ${before ? "brightness-[0.6] contrast-[0.8] blur-[0.6px] grayscale-[0.6] sepia-[0.35]" : ""}`}
       />
       {before && (
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgb(120_105_80/0.35),transparent_60%),linear-gradient(rgb(90_80_60/0.25),rgb(90_80_60/0.25))] mix-blend-multiply" />
