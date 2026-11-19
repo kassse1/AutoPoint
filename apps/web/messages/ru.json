@@ -26,7 +26,7 @@
     "call": "Позвонить",
     "whatsappText": "Здравствуйте! Хочу записаться в {business}.",
     "whatsappServiceText": "Здравствуйте! Интересует услуга «{service}».",
-    "illustration": "Демо-иллюстрация",
+    "illustration": "Демо-фото",
     "closed": "Выходной",
     "priceOnRequest": "Цена по запросу",
     "priceFrom": "от {price}",

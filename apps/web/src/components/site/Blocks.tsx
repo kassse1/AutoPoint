@@ -6,25 +6,35 @@ import { Media } from "@/components/ui/Media";
 import { ButtonLink, DemoBadge } from "@/components/ui/primitives";
 
 /** Before/after slider (or single image) for one gallery item, with caption and demo badge. */
-export async function GalleryFigure({ item, sizes }: { item: GalleryItem; sizes?: string }) {
+export async function GalleryFigure({
+  item,
+  sizes,
+  aspect = "aspect-[16/10]",
+  className = "",
+}: {
+  item: GalleryItem;
+  sizes?: string;
+  aspect?: string;
+  className?: string;
+}) {
   const t = await getTranslations("Common");
+  const demo = String(item.id);
   return (
-    <figure>
+    <figure className={`relative overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_30px_60px_-35px_#000] ${className}`}>
       {item.kind === "before_after" ? (
         <BeforeAfter
-          before={<Media src={item.before_image_url} alt={item.alt} variant="before" sizes={sizes} className="aspect-[16/10]" />}
-          after={<Media src={item.image_url} alt={item.alt} variant="after" sizes={sizes} className="aspect-[16/10]" />}
+          before={<Media src={item.before_image_url} alt={item.alt} demo={demo} variant="before" sizes={sizes} className={aspect} />}
+          after={<Media src={item.image_url} alt={item.alt} demo={demo} variant="after" sizes={sizes} className={aspect} />}
           beforeLabel={t("before")}
           afterLabel={t("after")}
           sliderLabel={t("compare", { title: item.alt })}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-line">
-          <Media src={item.image_url} alt={item.alt} variant="after" sizes={sizes} className="aspect-[16/10]" />
-        </div>
+        <Media src={item.image_url} alt={item.alt} demo={demo} variant="after" sizes={sizes} className={aspect} />
       )}
-      <figcaption className="mt-3 flex flex-wrap items-center gap-3 text-sm text-fg-muted">
-        <span>{item.caption ?? item.alt}</span>
+      {/* Over the photo, below the slider's z-10 input, so dragging still works everywhere. */}
+      <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5 pt-16 pr-32 text-sm">
+        <span className="font-medium text-fg">{item.caption ?? item.alt}</span>
         {item.is_demo && <DemoBadge label={t("demo")} />}
       </figcaption>
     </figure>

@@ -32,6 +32,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Demo stock photos (src/lib/demoPhotos.ts), shown until real ones are uploaded.
+  images: { remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }] },
   poweredByHeader: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

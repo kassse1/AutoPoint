@@ -26,7 +26,7 @@ export async function ServiceCardView({ service, headingLevel = "h3" }: { servic
   const Heading = headingLevel;
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface/60 transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_20px_50px_-25px_var(--color-accent)]">
-      <Media src={service.image_url} alt={service.name} className="aspect-[4/3]" />
+      <Media src={service.image_url} alt={service.name} demo={service.slug} className="aspect-[4/3]" />
       <div className="flex flex-1 flex-col p-6">
         <Heading className="font-display text-xl font-semibold">
           <Link href={`/services/${service.slug}`} className="after:absolute after:inset-0">

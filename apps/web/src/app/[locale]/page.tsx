@@ -6,7 +6,7 @@ import { CtaBand, GalleryFigure, ReviewCard } from "@/components/site/Blocks";
 import { MapEmbed } from "@/components/site/MapEmbed";
 import { OpeningHoursList } from "@/components/site/OpeningHours";
 import { ServiceCardView } from "@/components/site/ServiceCard";
-import { CarArt } from "@/components/ui/CarArt";
+import { DEMO_HERO } from "@/lib/demoPhotos";
 import { ButtonAnchor, ButtonLink, Section, SectionHeader } from "@/components/ui/primitives";
 import type { Locale } from "@/i18n/routing";
 import { api, type Site } from "@/lib/api/client";
@@ -82,16 +82,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(businessJsonLd(site, locale)) }} />
 
-      <section className="relative overflow-hidden border-b border-line bg-[radial-gradient(ellipse_at_50%_35%,#1d1d22_0%,#0b0b0d_55%,var(--color-bg)_100%)]">
-        {site.hero_image_url ? (
-          <>
-            <Image src={site.hero_image_url} alt="" fill priority sizes="100vw" className="object-cover object-[50%_65%]" />
-            {/* Darken top and bottom so the headline and the strip stay readable on any photo. */}
-            <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(8_8_10/0.88),rgb(8_8_10/0.35)_45%,rgb(8_8_10/0.55)_70%,rgb(8_8_10/0.95))]" />
-          </>
-        ) : (
-          <StudioLights />
-        )}
+      <section className="relative overflow-hidden border-b border-line bg-bg">
+        <Image
+          src={site.hero_image_url ?? DEMO_HERO}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[50%_60%]"
+        />
+        {/* Darken top and bottom so the headline and the strip stay readable on any photo. */}
+        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_bottom,rgb(8_8_10/0.9),rgb(8_8_10/0.45)_40%,rgb(8_8_10/0.25)_60%,rgb(8_8_10/0.95))]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(8_8_10/0.7))]" />
         <div className="container-page relative pt-12 text-center sm:pt-16">
           <p className="eyebrow">{t("hero.eyebrow", { city: site.city })}</p>
           <h1 className="mt-6 font-headline text-[clamp(2.4rem,7vw,5.25rem)] leading-[1] font-semibold tracking-[0.06em] uppercase">
@@ -111,15 +113,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
           <div className="mt-2 grid items-center gap-8 lg:grid-cols-[10rem_1fr_12rem]">
             <div aria-hidden="true" className="hidden lg:block" />
-            <div role="img" aria-label={t("hero.imageAlt")} className="relative">
-              {site.hero_image_url ? (
-                // The photo is the section background; this keeps its car visible between text and strip.
-                <div className="h-[clamp(12rem,30vw,26rem)]" />
-              ) : (
-                <>
-                  <div aria-hidden="true" className="absolute inset-x-[10%] bottom-[12%] h-1/3 rounded-full bg-accent/10 blur-3xl" />
-                  <CarArt variant="hero" className="relative mx-auto w-full max-w-4xl" />
-                </>
+            {/* The photo is the section background; this keeps its car visible between text and strip. */}
+            <div role="img" aria-label={t("hero.imageAlt")} className="relative h-[clamp(12rem,30vw,26rem)]">
+              {!site.hero_image_url && (
+                <span className="absolute right-0 bottom-0 rounded-full bg-black/50 px-2 py-0.5 text-[10px] tracking-[0.12em] text-fg/70 uppercase backdrop-blur">
+                  {tc("illustration")}
+                </span>
               )}
             </div>
             <ul className="grid gap-6 text-left sm:grid-cols-3 lg:grid-cols-1">
@@ -169,9 +168,15 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               {t("results.cta")}
             </ButtonLink>
           </SectionHeader>
-          <div className="mt-12 grid gap-10 lg:grid-cols-2">
-            {pairs.slice(0, 2).map((item) => (
-              <GalleryFigure key={item.id} item={item} sizes="(min-width: 1024px) 50vw, 100vw" />
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            {pairs.slice(0, 3).map((item, i) => (
+              <GalleryFigure
+                key={item.id}
+                item={item}
+                className={`reveal ${i === 0 ? "lg:col-span-2" : ""}`}
+                aspect={i === 0 ? "aspect-[4/3] sm:aspect-[21/9]" : "aspect-[16/10]"}
+                sizes={i === 0 ? "100vw" : "(min-width: 1024px) 50vw, 100vw"}
+              />
             ))}
           </div>
         </Section>
@@ -256,20 +261,5 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       <CtaBand />
     </>
-  );
-}
-
-/** Decorative studio light tubes and floor glow behind the hero. */
-function StudioLights() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-      <span className="light-tube top-24 left-[4%] hidden h-[3px] w-56 rotate-[18deg] md:block" />
-      <span className="light-tube top-24 right-[4%] hidden h-[3px] w-56 -rotate-[18deg] md:block" />
-      {[["6%", "16rem"], ["9%", "14rem"], ["12%", "12rem"], ["14.5%", "10.5rem"]].map(([left, h]) => (
-        <span key={left} className="light-tube top-[42%] hidden w-[3px] lg:block" style={{ left, height: h }} />
-      ))}
-      <span className="light-tube top-[40%] right-[22%] hidden h-52 w-[3px] xl:block" />
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(to_bottom,transparent,rgb(255_255_255/0.025))]" />
-    </div>
   );
 }

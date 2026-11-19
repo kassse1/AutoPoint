@@ -26,7 +26,7 @@
     "call": "Call",
     "whatsappText": "Hello! I'd like to book an appointment at {business}.",
     "whatsappServiceText": "Hello! I'm interested in “{service}”.",
-    "illustration": "Demo illustration",
+    "illustration": "Demo photo",
     "closed": "Closed",
     "priceOnRequest": "Price on request",
     "priceFrom": "from {price}",
