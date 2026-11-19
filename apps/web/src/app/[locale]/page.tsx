@@ -179,7 +179,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 item={item}
                 className={`reveal ${i === 0 ? "lg:col-span-2" : ""}`}
                 aspect={i === 0 ? "aspect-[4/3] sm:aspect-[21/9]" : "aspect-[16/10]"}
-                sizes={i === 0 ? "100vw" : "(min-width: 1024px) 50vw, 100vw"}
+                sizes={i === 0 ? "(min-width: 1320px) 1280px, 100vw" : "(min-width: 1024px) 50vw, 100vw"}
               />
             ))}
           </div>

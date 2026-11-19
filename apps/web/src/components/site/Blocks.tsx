@@ -18,19 +18,19 @@ export async function GalleryFigure({
   className?: string;
 }) {
   const t = await getTranslations("Common");
-  const demo = String(item.id);
+  const slug = item.service_slug ?? "";
   return (
     <figure className={`relative overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_30px_60px_-35px_#000] ${className}`}>
       {item.kind === "before_after" ? (
         <BeforeAfter
-          before={<Media src={item.before_image_url} alt={item.alt} demo={demo} variant="before" sizes={sizes} className={aspect} />}
-          after={<Media src={item.image_url} alt={item.alt} demo={demo} variant="after" sizes={sizes} className={aspect} />}
+          before={<Media src={item.before_image_url} alt={item.alt} demo={`before:${slug}`} sizes={sizes} className={aspect} />}
+          after={<Media src={item.image_url} alt={item.alt} demo={`after:${slug}`} sizes={sizes} className={aspect} />}
           beforeLabel={t("before")}
           afterLabel={t("after")}
           sliderLabel={t("compare", { title: item.alt })}
         />
       ) : (
-        <Media src={item.image_url} alt={item.alt} demo={demo} variant="after" sizes={sizes} className={aspect} />
+        <Media src={item.image_url} alt={item.alt} demo={item.service_slug ?? String(item.id)} sizes={sizes} className={aspect} />
       )}
       {/* Over the photo, below the slider's z-10 input, so dragging still works everywhere. */}
       <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5 pt-16 pr-32 text-sm">

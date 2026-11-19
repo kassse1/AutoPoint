@@ -156,7 +156,7 @@ export default async function ServicePage({ params }: Props) {
           </div>
         </div>
         <div className="container-page pb-14">
-          <Media src={service.image_url} alt={service.name} demo={service.slug} variant="after" priority className="aspect-[16/9] sm:aspect-[21/9]" />
+          <Media src={service.image_url} alt={service.name} demo={service.slug} priority className="aspect-[16/9] sm:aspect-[21/9]" />
         </div>
       </section>
 

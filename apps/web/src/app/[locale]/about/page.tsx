@@ -44,7 +44,7 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/about">
       <Section>
         <SectionHeader as="h1" eyebrow={t("eyebrow")} title={t("title", { business: site.business_name })} lead={t("lead")} />
         <div className="mt-14 grid gap-12 lg:grid-cols-12">
-          <Media src={null} alt={t("imageAlt")} variant="after" className="aspect-[4/3] lg:col-span-7" />
+          <Media src={null} alt={t("imageAlt")} className="aspect-[4/3] lg:col-span-7" />
           <div className="space-y-6 text-lg leading-relaxed text-fg-muted lg:col-span-5">
             <p>{t("story.p1")}</p>
             <p>{t("story.p2")}</p>
