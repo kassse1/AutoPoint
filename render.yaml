@@ -27,6 +27,9 @@ services:
         sync: false
       - key: AUTOPOINT_PASSWORD
         sync: false
+      # Set to 1 for one deploy to apply AUTOPOINT_PASSWORD to the existing owner, then remove.
+      - key: RESET_OWNER_PASSWORD
+        sync: false
       # Optional: Telegram staff notifications. Leave empty to keep them queued.
       - key: TELEGRAM_BOT_TOKEN
         sync: false

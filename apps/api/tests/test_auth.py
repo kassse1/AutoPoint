@@ -62,6 +62,26 @@ def test_lockout_after_five_failures_and_admin_unlock(api, staff, seeded) -> Non
     assert login(api, STAFF["manager"]).status_code == 200
 
 
+def test_cli_set_password_unlocks_and_signs_out(api, staff, seeded) -> None:
+    """Render's free plan has no shell: the start script resets the owner with this."""
+    from app.manage import set_password
+
+    refresh = login(api, STAFF["manager"])
+    assert refresh.status_code == 200
+    for _ in range(5):
+        login(api, STAFF["manager"], "wrong-password-123")
+    assert seeded.get(User, staff["manager"].id).locked_until is not None
+
+    set_password(seeded, STAFF["manager"], "brand-new-password-1")
+
+    assert login(api, STAFF["manager"]).status_code == 401  # old password gone
+    assert login(api, STAFF["manager"], "brand-new-password-1").status_code == 200
+    sessions = seeded.scalars(
+        select(RefreshSession).where(RefreshSession.revoke_reason == "password_reset")
+    ).all()
+    assert sessions and all(s.user_id == staff["manager"].id for s in sessions)
+
+
 def test_refresh_rotates_and_reuse_kills_the_login(api, staff) -> None:
     login(api, STAFF["owner"])
     stolen = api.cookies.get("ap_refresh")

@@ -4,6 +4,10 @@
 
 The password is asked interactively (or read from AUTOPOINT_PASSWORD for automation).
 
+    python -m app.manage set-password --email owner@studio.kz
+
+Sets a new password (same source), unlocks the account and signs out every session.
+
     python -m app.manage grant-app-role [--role autopoint_app]
 
 Gives the restricted application role access to every table, except changing or deleting
@@ -15,13 +19,14 @@ import getpass
 import os
 import sys
 
-from sqlalchemy import Connection, select, text
+from sqlalchemy import Connection, select, text, update
+from sqlalchemy.orm import Session
 
 import app.models  # noqa: F401 - all mappers, run standalone (fresh database)
 from app.db import SessionLocal, engine
 from app.modules.audit.models import record
-from app.modules.auth.models import ROLES, User
-from app.modules.auth.security import hash_password
+from app.modules.auth.models import ROLES, RefreshSession, User
+from app.modules.auth.security import hash_password, utcnow
 
 
 def create_user(email: str, name: str, role: str, password: str) -> None:
@@ -42,6 +47,30 @@ def create_user(email: str, name: str, role: str, password: str) -> None:
             after={"email": email, "role": role, "via": "cli"},
         )
     print(f"Created {role} {email}")
+
+
+def set_password(session: Session, email: str, password: str) -> None:
+    """New password, unlocked account, every session signed out."""
+    if len(password) < 10:
+        sys.exit("Password must be at least 10 characters")
+    user = session.scalar(select(User).where(User.email == email))
+    if user is None:
+        sys.exit(f"User {email} not found")
+    user.password_hash = hash_password(password)
+    user.failed_logins, user.locked_until = 0, None
+    session.execute(
+        update(RefreshSession)
+        .where(RefreshSession.user_id == user.id, RefreshSession.revoked_at.is_(None))
+        .values(revoked_at=utcnow(), revoke_reason="password_reset")
+    )
+    record(
+        session,
+        action="user.password_reset",
+        entity_type="user",
+        entity_id=user.id,
+        actor_kind="system",
+        after={"via": "cli"},
+    )
 
 
 APP_ROLE = "autopoint_app"
@@ -70,6 +99,8 @@ def main() -> None:
     create.add_argument("--email", required=True)
     create.add_argument("--name", required=True)
     create.add_argument("--role", choices=ROLES, required=True)
+    reset = sub.add_parser("set-password")
+    reset.add_argument("--email", required=True)
     grant = sub.add_parser("grant-app-role")
     grant.add_argument("--role", default=APP_ROLE)
     args = parser.parse_args()
@@ -79,6 +110,11 @@ def main() -> None:
         print(f"Grants applied to {args.role}" if done else f"Role {args.role} not found: skipped")
         return
     password = os.environ.get("AUTOPOINT_PASSWORD") or getpass.getpass("Password: ")
+    if args.command == "set-password":
+        with SessionLocal.begin() as session:
+            set_password(session, args.email.strip(), password)
+        print(f"Password set for {args.email.strip()}")
+        return
     create_user(args.email.strip(), args.name.strip(), args.role, password)
 
 

@@ -13,6 +13,11 @@ python -m app.seed  # demo content on an empty database; no demo logins in produ
 if [ -n "${OWNER_EMAIL:-}" ]; then
   # Exits non-zero when the user already exists; that is fine on every later start.
   python -m app.manage create-user --email "$OWNER_EMAIL" --name "Владелец" --role owner || true
+  # No shell on the free plan: set RESET_OWNER_PASSWORD=1 for one deploy to apply
+  # AUTOPOINT_PASSWORD to the existing owner (also unlocks it), then remove the variable.
+  if [ "${RESET_OWNER_PASSWORD:-}" = "1" ]; then
+    python -m app.manage set-password --email "$OWNER_EMAIL"
+  fi
 fi
 
 uvicorn app.main:app --host 127.0.0.1 --port 8000 &
