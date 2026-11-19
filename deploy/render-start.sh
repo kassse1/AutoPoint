@@ -16,6 +16,14 @@ if [ -n "${OWNER_EMAIL:-}" ]; then
 fi
 
 uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+api=$!
+# Next.js proxies to the API: start it only once the API port accepts connections, otherwise
+# requests during the API's slow cold start fail with ECONNREFUSED 127.0.0.1:8000.
+for _ in $(seq 120); do
+  (echo > /dev/tcp/127.0.0.1/8000) 2>/dev/null && break
+  kill -0 "$api" 2>/dev/null || { echo "API exited during startup" >&2; exit 1; }
+  sleep 0.5
+done
 python -m app.worker &
 # Render overrides HOSTNAME with the instance name, which Next.js cannot bind to.
 HOSTNAME=0.0.0.0 node /web/server.js &
