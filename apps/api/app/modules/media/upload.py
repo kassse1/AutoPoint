@@ -11,10 +11,10 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel
 
 from app.config import get_settings
+from app.deps import SessionDep
 from app.errors import AppError
 from app.modules.audit.models import record_user
 from app.modules.auth.permissions import CurrentUser, Permission, require
-from app.deps import SessionDep
 
 router = APIRouter(prefix="/admin/media", tags=["admin: media"])
 
@@ -54,7 +54,13 @@ def process_image(data: bytes) -> tuple[bytes, int, int]:
             return out.getvalue(), image.width, image.height
     except AppError:
         raise
-    except (UnidentifiedImageError, Image.DecompressionBombError, OSError, SyntaxError, ValueError) as error:
+    except (
+        UnidentifiedImageError,
+        Image.DecompressionBombError,
+        OSError,
+        SyntaxError,
+        ValueError,
+    ) as error:
         raise AppError(415, "UNSUPPORTED_IMAGE", "Not a valid image") from error
 
 
@@ -74,6 +80,8 @@ def upload(
     webp, width, height = process_image(data)
     name = f"{uuid.uuid4().hex}.webp"
     (media_dir() / name).write_bytes(webp)
-    record_user(session, user, "media.uploaded", "media", name, after={"width": width, "height": height})
+    record_user(
+        session, user, "media.uploaded", "media", name, after={"width": width, "height": height}
+    )
     session.commit()
     return UploadOut(url=f"{MEDIA_URL}/{name}", width=width, height=height)

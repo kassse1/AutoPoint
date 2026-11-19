@@ -21,7 +21,9 @@ router = APIRouter(prefix="/admin", tags=["admin: gallery & reviews"])
 
 Writer = Annotated[CurrentUser, Depends(require(Permission.MEDIA_WRITE))]
 # Our own uploads, or an https URL (e.g. a CDN the business already uses).
-ImageUrl = Annotated[str, Field(max_length=500, pattern=r"^(/api/v1/media/[0-9a-f]{32}\.webp|https://\S+)$")]
+ImageUrl = Annotated[
+    str, Field(max_length=500, pattern=r"^(/api/v1/media/[0-9a-f]{32}\.webp|https://\S+)$")
+]
 
 
 class GalleryIn(BaseModel):
@@ -111,7 +113,9 @@ def create_gallery(body: GalleryIn, user: Writer, session: SessionDep) -> Galler
     item = GalleryImage(**body.model_dump(), is_demo=False)
     session.add(item)
     session.flush()
-    record_user(session, user, "gallery.created", "gallery_image", item.id, after={"kind": item.kind})
+    record_user(
+        session, user, "gallery.created", "gallery_image", item.id, after={"kind": item.kind}
+    )
     _commit(session)
     return GalleryOut.model_validate(item)
 
@@ -122,7 +126,9 @@ def replace_gallery(item_id: int, body: GalleryIn, user: Writer, session: Sessio
     # Giving a demo item a real photo makes it a real item.
     before, after = apply_changes(item, {**body.model_dump(), "is_demo": False})
     if after:
-        record_user(session, user, "gallery.updated", "gallery_image", item.id, before=before, after=after)
+        record_user(
+            session, user, "gallery.updated", "gallery_image", item.id, before=before, after=after
+        )
     _commit(session)
     return GalleryOut.model_validate(item)
 
@@ -156,14 +162,18 @@ def create_review(body: AdminReviewIn, user: Writer, session: SessionDep) -> Adm
 
 
 @router.put("/reviews/{review_id}")
-def replace_review(review_id: int, body: AdminReviewIn, user: Writer, session: SessionDep) -> AdminReview:
+def replace_review(
+    review_id: int, body: AdminReviewIn, user: Writer, session: SessionDep
+) -> AdminReview:
     review = _get(session, Review, review_id, "REVIEW_NOT_FOUND")
     if review.is_demo:
         # A demo text must never be turned into a "real" customer review.
         raise AppError(409, "DEMO_REVIEW", "Delete demo reviews and add real ones instead")
     before, after = apply_changes(review, body.model_dump())
     if after:
-        record_user(session, user, "review.updated", "review", review.id, before=before, after=after)
+        record_user(
+            session, user, "review.updated", "review", review.id, before=before, after=after
+        )
     _commit(session)
     return AdminReview.model_validate(review)
 
