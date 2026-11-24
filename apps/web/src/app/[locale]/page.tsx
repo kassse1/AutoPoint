@@ -110,7 +110,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               {t("hero.primary")}
               <ArrowRight className="size-4" strokeWidth={1.5} aria-hidden="true" />
             </ButtonLink>
-            <ButtonLink href="/services" variant="secondary">
+            <ButtonLink href="/services" variant="secondary" className="border-2 border-fg/85! bg-white/10! hover:border-accent! hover:bg-white/15!">
               {t("hero.secondary")}
             </ButtonLink>
           </div>
